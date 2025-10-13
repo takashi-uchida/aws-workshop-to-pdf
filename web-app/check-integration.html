@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>統合チェック - Web to PDF Converter</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .check-item {
+            background: white;
+            padding: 16px;
+            margin: 12px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .check-item.success {
+            border-left: 4px solid #10b981;
+        }
+        .check-item.error {
+            border-left: 4px solid #ef4444;
+        }
+        .icon {
+            font-size: 24px;
+        }
+        .details {
+            flex: 1;
+        }
+        .label {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .message {
+            font-size: 14px;
+            color: #666;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .summary {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .summary h2 {
+            margin: 0 0 12px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-top: 16px;
+        }
+        .btn:hover {
+            background: #1d4ed8;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 統合チェック</h1>
+    
+    <div class="summary" id="summary">
+        <h2>チェック中...</h2>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const checks = [];
+
+        function addCheck(label, success, message) {
+            checks.push({ label, success, message });
+            const resultsDiv = document.getElementById('results');
+            const checkDiv = document.createElement('div');
+            checkDiv.className = `check-item ${success ? 'success' : 'error'}`;
+            checkDiv.innerHTML = `
+                <div class="icon">${success ? '✅' : '❌'}</div>
+                <div class="details">
+                    <div class="label">${label}</div>
+                    <div class="message">${message}</div>
+                </div>
+            `;
+            resultsDiv.appendChild(checkDiv);
+        }
+
+        function updateSummary() {
+            const total = checks.length;
+            const passed = checks.filter(c => c.success).length;
+            const failed = total - passed;
+
+            const summaryDiv = document.getElementById('summary');
+            summaryDiv.innerHTML = `
+                <h2>${passed === total ? '✅ すべてのチェックに合格しました！' : '⚠️ 一部のチェックに失敗しました'}</h2>
+                <p>合格: ${passed} / ${total}</p>
+                ${passed === total ? '<a href="index.html" class="btn">アプリを開く</a>' : ''}
+            `;
+        }
+
+        // チェック実行
+        (function runChecks() {
+            // 1. Utils モジュールのチェック
+            if (typeof Utils !== 'undefined') {
+                addCheck('Utils モジュール', true, 'Utils モジュールが正しく読み込まれています');
+                
+                // Utils の関数チェック
+                const utilsFunctions = ['isValidURL', 'parseURLList', 'getErrorMessage', 'validateSettings'];
+                const missingFunctions = utilsFunctions.filter(fn => typeof Utils[fn] !== 'function');
+                
+                if (missingFunctions.length === 0) {
+                    addCheck('Utils 関数', true, 'すべてのユーティリティ関数が利用可能です');
+                } else {
+                    addCheck('Utils 関数', false, `不足している関数: ${missingFunctions.join(', ')}`);
+                }
+            } else {
+                addCheck('Utils モジュール', false, 'Utils モジュールが読み込まれていません');
+            }
+
+            // 2. PDFConverter クラスのチェック
+            if (typeof PDFConverter !== 'undefined') {
+                addCheck('PDFConverter クラス', true, 'PDFConverter クラスが定義されています');
+                
+                try {
+                    const converter = new PDFConverter();
+                    addCheck('PDFConverter インスタンス化', true, 'PDFConverter のインスタンス化に成功しました');
+                } catch (error) {
+                    addCheck('PDFConverter インスタンス化', false, `エラー: ${error.message}`);
+                }
+            } else {
+                addCheck('PDFConverter クラス', false, 'PDFConverter クラスが定義されていません');
+            }
+
+            // 3. BatchProcessor クラスのチェック
+            if (typeof BatchProcessor !== 'undefined') {
+                addCheck('BatchProcessor クラス', true, 'BatchProcessor クラスが定義されています');
+                
+                try {
+                    const converter = new PDFConverter();
+                    const batchProcessor = new BatchProcessor(converter);
+                    addCheck('BatchProcessor インスタンス化', true, 'BatchProcessor のインスタンス化に成功しました');
+                } catch (error) {
+                    addCheck('BatchProcessor インスタンス化', false, `エラー: ${error.message}`);
+                }
+            } else {
+                addCheck('BatchProcessor クラス', false, 'BatchProcessor クラスが定義されていません');
+            }
+
+            // 4. App クラスのチェック
+            if (typeof App !== 'undefined') {
+                addCheck('App クラス', true, 'App クラスが定義されています');
+            } else {
+                addCheck('App クラス', false, 'App クラスが定義されていません');
+            }
+
+            // 5. DOM 要素のチェック
+            const requiredElements = [
+                'single-mode-tab',
+                'batch-mode-tab',
+                'single-url-input',
+                'single-convert-btn',
+                'batch-url-input',
+                'batch-convert-btn',
+                'page-size',
+                'orientation',
+                'progress-section',
+                'results-section'
+            ];
+
+            const missingElements = requiredElements.filter(id => !document.getElementById(id));
+            
+            if (missingElements.length === 0) {
+                addCheck('DOM 要素', true, 'すべての必要な DOM 要素が存在します');
+            } else {
+                addCheck('DOM 要素', false, `不足している要素: ${missingElements.join(', ')}`);
+            }
+
+            // 6. ブラウザ互換性チェック
+            if (typeof Utils !== 'undefined' && typeof Utils.checkBrowserCompatibility === 'function') {
+                const compatibility = Utils.checkBrowserCompatibility();
+                
+                if (compatibility.compatible) {
+                    addCheck('ブラウザ互換性', true, 'ブラウザはすべての必要な機能をサポートしています');
+                } else {
+                    addCheck('ブラウザ互換性', false, `サポートされていない機能: ${compatibility.unsupportedFeatures.join(', ')}`);
+                }
+
+                if (compatibility.warnings.length > 0) {
+                    compatibility.warnings.forEach(warning => {
+                        addCheck('ブラウザ警告', false, warning);
+                    });
+                }
+            }
+
+            // 7. localStorage チェック
+            try {
+                const testKey = '__test__';
+                localStorage.setItem(testKey, 'test');
+                localStorage.removeItem(testKey);
+                addCheck('localStorage', true, 'localStorage が利用可能です');
+            } catch (error) {
+                addCheck('localStorage', false, 'localStorage が利用できません（設定が保存されません）');
+            }
+
+            // 8. URL 検証テスト
+            if (typeof Utils !== 'undefined' && typeof Utils.isValidURL === 'function') {
+                const validTest = Utils.isValidURL('https://example.com');
+                const invalidTest = !Utils.isValidURL('not-a-url');
+                
+                if (validTest && invalidTest) {
+                    addCheck('URL 検証', true, 'URL 検証が正しく動作しています');
+                } else {
+                    addCheck('URL 検証', false, 'URL 検証に問題があります');
+                }
+            }
+
+            // 9. URL パーステスト
+            if (typeof Utils !== 'undefined' && typeof Utils.parseURLList === 'function') {
+                const testList = `# コメント
+https://example.com
+
+https://www.iana.org
+`;
+                const parsed = Utils.parseURLList(testList);
+                
+                if (parsed.length === 2) {
+                    addCheck('URL パース', true, 'URL リストのパースが正しく動作しています');
+                } else {
+                    addCheck('URL パース', false, `期待: 2個のURL、実際: ${parsed.length}個`);
+                }
+            }
+
+            updateSummary();
+        })();
+    </script>
+
+    <script src="js/utils.js"></script>
+    <script src="js/converter.js"></script>
+    <script src="js/batch.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

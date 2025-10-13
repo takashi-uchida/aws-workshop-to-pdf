@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ブラウザ互換性テスト - Web to PDF Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', Meiryo, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .browser-info {
+            background: #f7fafc;
+            border-left: 4px solid #4299e1;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .browser-info h2 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+
+        .browser-info p {
+            color: #4a5568;
+            margin: 5px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .test-section {
+            margin-bottom: 30px;
+        }
+
+        .test-section h3 {
+            color: #2d3748;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .test-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f7fafc;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .test-item:hover {
+            background: #edf2f7;
+        }
+
+        .test-status {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+
+        .test-status.success {
+            background: #48bb78;
+            color: white;
+        }
+
+        .test-status.error {
+            background: #f56565;
+            color: white;
+        }
+
+        .test-status.pending {
+            background: #ecc94b;
+            color: white;
+        }
+
+        .test-name {
+            flex: 1;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        .test-detail {
+            color: #718096;
+            font-size: 0.9em;
+            font-family: 'Courier New', monospace;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+        }
+
+        .btn-primary {
+            background: #4299e1;
+        }
+
+        .btn-primary:hover {
+            background: #3182ce;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+        }
+
+        .btn-secondary {
+            background: #48bb78;
+        }
+
+        .btn-secondary:hover {
+            background: #38a169;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-danger {
+            background: #f56565;
+        }
+
+        .btn-danger:hover {
+            background: #e53e3e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4);
+        }
+
+        .summary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .summary h3 {
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .console-output {
+            background: #1a202c;
+            color: #48bb78;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+
+        .console-output .error {
+            color: #f56565;
+        }
+
+        .console-output .warning {
+            color: #ecc94b;
+        }
+
+        .console-output .info {
+            color: #4299e1;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌐 ブラウザ互換性テスト</h1>
+        <p class="subtitle">Web to PDF Converter - クロスブラウザ機能チェック</p>
+
+        <div class="browser-info">
+            <h2>現在のブラウザ情報</h2>
+            <p><strong>ブラウザ:</strong> <span id="browserName">検出中...</span></p>
+            <p><strong>バージョン:</strong> <span id="browserVersion">検出中...</span></p>
+            <p><strong>User Agent:</strong> <span id="userAgent">検出中...</span></p>
+            <p><strong>プラットフォーム:</strong> <span id="platform">検出中...</span></p>
+            <p><strong>画面解像度:</strong> <span id="screenResolution">検出中...</span></p>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="runAllTests()">🚀 すべてのテストを実行</button>
+            <button class="btn-secondary" onclick="runBasicTests()">✅ 基本機能テスト</button>
+            <button class="btn-secondary" onclick="runAdvancedTests()">🔧 高度な機能テスト</button>
+            <button class="btn-danger" onclick="clearResults()">🗑️ 結果をクリア</button>
+        </div>
+
+        <div class="test-section">
+            <h3>基本機能テスト</h3>
+            <div id="basicTests"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>高度な機能テスト</h3>
+            <div id="advancedTests"></div>
+        </div>
+
+        <div class="summary" id="summary" style="display: none;">
+            <h3>📊 テスト結果サマリー</h3>
+            <div class="summary-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalTests">0</div>
+                    <div class="stat-label">総テスト数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="passedTests">0</div>
+                    <div class="stat-label">成功</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="failedTests">0</div>
+                    <div class="stat-label">失敗</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="successRate">0%</div>
+                    <div class="stat-label">成功率</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="console-output" id="consoleOutput"></div>
+    </div>
+
+    <script>
+        // ブラウザ検出
+        function detectBrowser() {
+            const ua = navigator.userAgent;
+            let browserName = 'Unknown';
+            let browserVersion = 'Unknown';
+
+            if (ua.indexOf('Firefox') > -1) {
+                browserName = 'Mozilla Firefox';
+                browserVersion = ua.match(/Firefox\/([0-9.]+)/)[1];
+            } else if (ua.indexOf('Edg') > -1) {
+                browserName = 'Microsoft Edge';
+                browserVersion = ua.match(/Edg\/([0-9.]+)/)[1];
+            } else if (ua.indexOf('Chrome') > -1) {
+                browserName = 'Google Chrome';
+                browserVersion = ua.match(/Chrome\/([0-9.]+)/)[1];
+            } else if (ua.indexOf('Safari') > -1) {
+                browserName = 'Apple Safari';
+                browserVersion = ua.match(/Version\/([0-9.]+)/)[1];
+            }
+
+            document.getElementById('browserName').textContent = browserName;
+            document.getElementById('browserVersion').textContent = browserVersion;
+            document.getElementById('userAgent').textContent = ua;
+            document.getElementById('platform').textContent = navigator.platform;
+            document.getElementById('screenResolution').textContent = 
+                `${window.screen.width} × ${window.screen.height}`;
+        }
+
+        // コンソール出力
+        function log(message, type = 'info') {
+            const output = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString('ja-JP');
+            const line = document.createElement('div');
+            line.className = type;
+            line.textContent = `[${timestamp}] ${message}`;
+            output.appendChild(line);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // テスト結果の表示
+        function displayTestResult(containerId, testName, passed, detail = '') {
+            const container = document.getElementById(containerId);
+            const testItem = document.createElement('div');
+            testItem.className = 'test-item';
+            
+            const status = document.createElement('div');
+            status.className = `test-status ${passed ? 'success' : 'error'}`;
+            status.textContent = passed ? '✓' : '✗';
+            
+            const name = document.createElement('div');
+            name.className = 'test-name';
+            name.textContent = testName;
+            
+            testItem.appendChild(status);
+            testItem.appendChild(name);
+            
+            if (detail) {
+                const detailDiv = document.createElement('div');
+                detailDiv.className = 'test-detail';
+                detailDiv.textContent = detail;
+                testItem.appendChild(detailDiv);
+            }
+            
+            container.appendChild(testItem);
+            
+            log(`${testName}: ${passed ? '成功' : '失敗'}${detail ? ' - ' + detail : ''}`, 
+                passed ? 'info' : 'error');
+        }
+
+        // 基本機能テスト
+        function runBasicTests() {
+            log('基本機能テストを開始します...', 'info');
+            const container = document.getElementById('basicTests');
+            container.innerHTML = '';
+
+            // localStorage テスト
+            try {
+                localStorage.setItem('test', 'value');
+                const value = localStorage.getItem('test');
+                localStorage.removeItem('test');
+                displayTestResult('basicTests', 'localStorage', value === 'value');
+            } catch (e) {
+                displayTestResult('basicTests', 'localStorage', false, e.message);
+            }
+
+            // sessionStorage テスト
+            try {
+                sessionStorage.setItem('test', 'value');
+                const value = sessionStorage.getItem('test');
+                sessionStorage.removeItem('test');
+                displayTestResult('basicTests', 'sessionStorage', value === 'value');
+            } catch (e) {
+                displayTestResult('basicTests', 'sessionStorage', false, e.message);
+            }
+
+            // iframe テスト
+            try {
+                const iframe = document.createElement('iframe');
+                iframe.style.display = 'none';
+                document.body.appendChild(iframe);
+                const hasIframe = document.body.contains(iframe);
+                document.body.removeChild(iframe);
+                displayTestResult('basicTests', 'iframe作成', hasIframe);
+            } catch (e) {
+                displayTestResult('basicTests', 'iframe作成', false, e.message);
+            }
+
+            // window.print テスト
+            const hasPrint = typeof window.print === 'function';
+            displayTestResult('basicTests', 'window.print API', hasPrint);
+
+            // Fetch API テスト
+            const hasFetch = typeof fetch === 'function';
+            displayTestResult('basicTests', 'Fetch API', hasFetch);
+
+            // Promise テスト
+            const hasPromise = typeof Promise !== 'undefined';
+            displayTestResult('basicTests', 'Promise', hasPromise);
+
+            // ES6 構文テスト
+            try {
+                eval('const arrow = () => {}; const [a, b] = [1, 2];');
+                displayTestResult('basicTests', 'ES6+ 構文', true);
+            } catch (e) {
+                displayTestResult('basicTests', 'ES6+ 構文', false, e.message);
+            }
+
+            updateSummary();
+        }
+
+        // 高度な機能テスト
+        function runAdvancedTests() {
+            log('高度な機能テストを開始します...', 'info');
+            const container = document.getElementById('advancedTests');
+            container.innerHTML = '';
+
+            // CSS Grid テスト
+            const hasGrid = CSS.supports('display', 'grid');
+            displayTestResult('advancedTests', 'CSS Grid', hasGrid);
+
+            // CSS Flexbox テスト
+            const hasFlex = CSS.supports('display', 'flex');
+            displayTestResult('advancedTests', 'CSS Flexbox', hasFlex);
+
+            // CSS Variables テスト
+            const hasVars = CSS.supports('--test', '0');
+            displayTestResult('advancedTests', 'CSS Variables', hasVars);
+
+            // Intersection Observer テスト
+            const hasIO = 'IntersectionObserver' in window;
+            displayTestResult('advancedTests', 'Intersection Observer', hasIO);
+
+            // ResizeObserver テスト
+            const hasRO = 'ResizeObserver' in window;
+            displayTestResult('advancedTests', 'ResizeObserver', hasRO);
+
+            // Web Workers テスト
+            const hasWorkers = typeof Worker !== 'undefined';
+            displayTestResult('advancedTests', 'Web Workers', hasWorkers);
+
+            // Service Workers テスト
+            const hasSW = 'serviceWorker' in navigator;
+            displayTestResult('advancedTests', 'Service Workers', hasSW);
+
+            // WebGL テスト
+            try {
+                const canvas = document.createElement('canvas');
+                const hasWebGL = !!(canvas.getContext('webgl') || canvas.getContext('experimental-webgl'));
+                displayTestResult('advancedTests', 'WebGL', hasWebGL);
+            } catch (e) {
+                displayTestResult('advancedTests', 'WebGL', false, e.message);
+            }
+
+            // Clipboard API テスト
+            const hasClipboard = navigator.clipboard !== undefined;
+            displayTestResult('advancedTests', 'Clipboard API', hasClipboard);
+
+            // Geolocation API テスト
+            const hasGeo = 'geolocation' in navigator;
+            displayTestResult('advancedTests', 'Geolocation API', hasGeo);
+
+            updateSummary();
+        }
+
+        // すべてのテストを実行
+        function runAllTests() {
+            log('=== すべてのテストを実行します ===', 'info');
+            clearResults();
+            runBasicTests();
+            runAdvancedTests();
+            log('=== テスト完了 ===', 'info');
+        }
+
+        // 結果をクリア
+        function clearResults() {
+            document.getElementById('basicTests').innerHTML = '';
+            document.getElementById('advancedTests').innerHTML = '';
+            document.getElementById('consoleOutput').innerHTML = '';
+            document.getElementById('summary').style.display = 'none';
+            log('結果をクリアしました', 'info');
+        }
+
+        // サマリーを更新
+        function updateSummary() {
+            const allTests = document.querySelectorAll('.test-item');
+            const passed = document.querySelectorAll('.test-status.success').length;
+            const failed = document.querySelectorAll('.test-status.error').length;
+            const total = allTests.length;
+            const rate = total > 0 ? Math.round((passed / total) * 100) : 0;
+
+            document.getElementById('totalTests').textContent = total;
+            document.getElementById('passedTests').textContent = passed;
+            document.getElementById('failedTests').textContent = failed;
+            document.getElementById('successRate').textContent = rate + '%';
+            document.getElementById('summary').style.display = 'block';
+        }
+
+        // 初期化
+        window.addEventListener('DOMContentLoaded', () => {
+            detectBrowser();
+            log('ブラウザ互換性テストツールを起動しました', 'info');
+            log('「すべてのテストを実行」ボタンをクリックしてテストを開始してください', 'info');
+        });
+    </script>
+</body>
+</html>

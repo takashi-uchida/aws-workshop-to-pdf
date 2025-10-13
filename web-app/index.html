@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ブラウザベースのWeb to PDFコンバーター - ソフトウェアのインストール不要でWebページをPDFに変換">
+    <meta name="keywords" content="PDF変換,Webページ,ブラウザツール,オンラインコンバーター">
+    <meta name="author" content="Web to PDF Converter">
+    <title>Web to PDF Converter</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <!-- スキップリンク（アクセシビリティ向上） -->
+    <a href="#main-content" class="skip-link">メインコンテンツへスキップ</a>
+
+    <header class="header" role="banner">
+        <div class="header-content">
+            <h1>Web to PDF Converter</h1>
+            <p class="subtitle">ブラウザから直接WebページをPDFに変換</p>
+        </div>
+    </header>
+
+    <main class="main" role="main" id="main-content">
+        <div class="container">
+            <nav class="mode-tabs" role="tablist" aria-label="変換モード選択">
+                <button 
+                    id="single-mode-tab" 
+                    class="tab-button active" 
+                    data-mode="single"
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="single-mode"
+                >
+                    単一URL
+                </button>
+                <button 
+                    id="batch-mode-tab" 
+                    class="tab-button" 
+                    data-mode="batch"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="batch-mode"
+                >
+                    バッチ変換
+                </button>
+            </nav>
+
+        <section id="single-mode" class="mode-section active">
+            <div class="input-group">
+                <label for="single-url-input">変換するURLを入力してください</label>
+                <input 
+                    type="url" 
+                    id="single-url-input" 
+                    placeholder="https://example.com"
+                    aria-describedby="single-url-error"
+                >
+                <div id="single-url-error" class="error-message" role="alert"></div>
+            </div>
+            <button id="single-convert-btn" class="btn btn-primary">
+                PDFに変換
+            </button>
+        </section>
+
+        <section id="batch-mode" class="mode-section">
+            <div class="input-group">
+                <label for="batch-url-input">
+                    複数のURLを入力してください（1行に1つ）
+                    <span class="url-count" id="url-count">0 URLs</span>
+                </label>
+                <textarea 
+                    id="batch-url-input" 
+                    rows="10"
+                    placeholder="https://example.com/page1&#10;https://example.com/page2&#10;https://example.com/page3"
+                    aria-describedby="batch-url-error"
+                ></textarea>
+                <div id="batch-url-error" class="error-message" role="alert"></div>
+            </div>
+            <button id="batch-convert-btn" class="btn btn-primary">
+                バッチ変換開始
+            </button>
+        </section>
+
+        <section class="settings-section">
+            <details class="settings-panel">
+                <summary>PDF設定</summary>
+                <div class="settings-content">
+                    <div class="setting-group">
+                        <label for="page-size">ページサイズ</label>
+                        <select id="page-size">
+                            <option value="A4" selected>A4</option>
+                            <option value="Letter">Letter</option>
+                            <option value="Legal">Legal</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label for="orientation">向き</label>
+                        <select id="orientation">
+                            <option value="portrait" selected>縦向き</option>
+                            <option value="landscape">横向き</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-group">
+                        <label>余白</label>
+                        <div class="margin-inputs">
+                            <input type="text" id="margin-top" value="1cm" placeholder="上">
+                            <input type="text" id="margin-right" value="1cm" placeholder="右">
+                            <input type="text" id="margin-bottom" value="1cm" placeholder="下">
+                            <input type="text" id="margin-left" value="1cm" placeholder="左">
+                        </div>
+                    </div>
+
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="print-background" checked>
+                            背景色と画像を印刷
+                        </label>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <section class="progress-section" id="progress-section" hidden>
+            <div class="loading-indicator">
+                <div class="spinner"></div>
+                <p id="progress-message">処理中...</p>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div id="progress-details"></div>
+        </section>
+
+        <section class="results-section" id="results-section" hidden>
+            <h2>変換結果</h2>
+            <div id="results-content"></div>
+        </section>
+
+        <section class="info-section">
+            <details>
+                <summary>使用方法</summary>
+                <div class="info-content">
+                    <h3>単一URL変換</h3>
+                    <ol>
+                        <li>変換したいWebページのURLを入力</li>
+                        <li>必要に応じてPDF設定を調整</li>
+                        <li>「PDFに変換」ボタンをクリック</li>
+                        <li>ブラウザの印刷ダイアログでPDFとして保存</li>
+                    </ol>
+
+                    <h3>バッチ変換</h3>
+                    <ol>
+                        <li>「バッチ変換」タブに切り替え</li>
+                        <li>複数のURLを1行に1つずつ入力</li>
+                        <li>「バッチ変換開始」ボタンをクリック</li>
+                        <li>各URLが順次処理されます</li>
+                    </ol>
+                </div>
+            </details>
+
+            <details>
+                <summary>制限事項</summary>
+                <div class="info-content">
+                    <h3>ブラウザの制限</h3>
+                    <ul>
+                        <li>CORS制限により、一部のWebサイトは変換できない場合があります</li>
+                        <li>印刷ダイアログは手動で操作する必要があります</li>
+                        <li>完全自動でのPDFダウンロードはブラウザのセキュリティ制限により不可能です</li>
+                    </ul>
+
+                    <h3>CORS制限について</h3>
+                    <p>CORS（Cross-Origin Resource Sharing）は、ブラウザのセキュリティ機能です。異なるドメインのWebページにアクセスする際に制限がかかります。</p>
+                    
+                    <h4>CORS制限が発生する場合</h4>
+                    <ul>
+                        <li>このツールとは異なるドメインのページを変換しようとした場合</li>
+                        <li>対象のWebサイトがCORSヘッダーを設定していない場合</li>
+                        <li>HTTPSとHTTPが混在している場合</li>
+                    </ul>
+
+                    <h4>対処方法</h4>
+                    <ol>
+                        <li><strong>同一ドメインのページを使用</strong>：このツールと同じドメインでホストされているページは問題なく動作します</li>
+                        <li><strong>ブラウザ拡張機能を使用</strong>：「CORS Unblock」などの拡張機能でCORS制限を一時的に無効化できます（開発用途のみ推奨）</li>
+                        <li><strong>プロキシサービスを利用</strong>：CORSプロキシサービスを経由してアクセスします</li>
+                        <li><strong>サーバー側で対応</strong>：対象のWebサイトの管理者に、適切なCORSヘッダーの設定を依頼します</li>
+                    </ol>
+
+                    <h3>推奨環境</h3>
+                    <ul>
+                        <li>Chrome、Firefox、Edge、Safariの最新版</li>
+                        <li>JavaScriptを有効にしてください</li>
+                        <li>localStorageを有効にしてください（設定の保存に使用）</li>
+                    </ul>
+                </div>
+            </details>
+        </section>
+        </div>
+    </main>
+
+    <!-- トースト通知コンテナ -->
+    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- ヘルプモーダル -->
+    <div id="help-modal" class="modal" role="dialog" aria-labelledby="help-modal-title" aria-hidden="true">
+        <div class="modal-overlay" data-close-modal="help-modal"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="help-modal-title">使用方法</h2>
+                <button class="modal-close" data-close-modal="help-modal" aria-label="閉じる">×</button>
+            </div>
+            <div class="modal-body">
+                <section class="help-section">
+                    <h3>📄 単一URL変換</h3>
+                    <ol class="help-steps">
+                        <li>
+                            <strong>URLを入力</strong>
+                            <p>変換したいWebページのURLを入力フィールドに貼り付けます。</p>
+                            <div class="help-example">例: https://example.com/page</div>
+                        </li>
+                        <li>
+                            <strong>設定を調整（オプション）</strong>
+                            <p>「PDF設定」セクションを展開して、ページサイズ、向き、余白などをカスタマイズできます。</p>
+                        </li>
+                        <li>
+                            <strong>変換を開始</strong>
+                            <p>「PDFに変換」ボタンをクリックします。</p>
+                        </li>
+                        <li>
+                            <strong>印刷ダイアログで保存</strong>
+                            <p>ブラウザの印刷ダイアログが表示されたら、「送信先」を「PDFに保存」に設定して保存します。</p>
+                        </li>
+                    </ol>
+                </section>
+
+                <section class="help-section">
+                    <h3>📚 バッチ変換</h3>
+                    <ol class="help-steps">
+                        <li>
+                            <strong>バッチモードに切り替え</strong>
+                            <p>上部の「バッチ変換」タブをクリックします。</p>
+                        </li>
+                        <li>
+                            <strong>複数のURLを入力</strong>
+                            <p>テキストエリアに1行に1つずつURLを入力します。</p>
+                            <div class="help-example">
+                                https://example.com/page1<br>
+                                https://example.com/page2<br>
+                                # コメント行は無視されます<br>
+                                https://example.com/page3
+                            </div>
+                        </li>
+                        <li>
+                            <strong>バッチ変換を開始</strong>
+                            <p>「バッチ変換開始」ボタンをクリックします。</p>
+                        </li>
+                        <li>
+                            <strong>各URLの印刷ダイアログで保存</strong>
+                            <p>各URLの処理時に印刷ダイアログが表示されるので、順番に保存していきます。</p>
+                        </li>
+                    </ol>
+                </section>
+
+                <section class="help-section">
+                    <h3>⚙️ PDF設定</h3>
+                    <ul class="help-list">
+                        <li><strong>ページサイズ:</strong> A4、Letter、Legalから選択</li>
+                        <li><strong>向き:</strong> 縦向き（Portrait）または横向き（Landscape）</li>
+                        <li><strong>余白:</strong> 上下左右の余白をcm単位で指定</li>
+                        <li><strong>スケール:</strong> ページの拡大縮小率（0.1〜2.0）</li>
+                        <li><strong>背景印刷:</strong> 背景色と画像を印刷するかどうか</li>
+                    </ul>
+                    <p class="help-note">💡 設定は自動的に保存され、次回の使用時にも適用されます。</p>
+                </section>
+
+                <section class="help-section">
+                    <h3>💡 ヒント</h3>
+                    <ul class="help-list">
+                        <li>同一ドメインのページで最も効果的に動作します</li>
+                        <li>動的コンテンツの読み込みには少し時間がかかる場合があります</li>
+                        <li>印刷ダイアログで詳細設定を調整できます</li>
+                        <li>バッチ処理では各URLを順次処理するため、時間がかかる場合があります</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close-modal="help-modal">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 制限事項モーダル -->
+    <div id="limitations-modal" class="modal" role="dialog" aria-labelledby="limitations-modal-title" aria-hidden="true">
+        <div class="modal-overlay" data-close-modal="limitations-modal"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="limitations-modal-title">制限事項</h2>
+                <button class="modal-close" data-close-modal="limitations-modal" aria-label="閉じる">×</button>
+            </div>
+            <div class="modal-body">
+                <section class="help-section">
+                    <h3>🔒 CORS（Cross-Origin Resource Sharing）制限</h3>
+                    <p>ブラウザのセキュリティポリシーにより、異なるドメインのページへのアクセスが制限されます。</p>
+                    
+                    <h4>影響を受けるケース</h4>
+                    <ul class="help-list">
+                        <li>外部ドメインのページ（このアプリとは異なるドメイン）</li>
+                        <li>CORSヘッダーが設定されていないページ</li>
+                        <li>認証が必要なページ</li>
+                    </ul>
+
+                    <h4>対処方法</h4>
+                    <ul class="help-list">
+                        <li><strong>同一ドメインのページを使用:</strong> 最も確実な方法です</li>
+                        <li><strong>ブラウザ拡張機能:</strong> CORS Unblockなどの拡張機能を使用（セキュリティリスクに注意）</li>
+                        <li><strong>プロキシサービス:</strong> CORS制限を回避するプロキシを経由</li>
+                        <li><strong>サーバー側対応:</strong> 対象サイトでCORSヘッダーを設定</li>
+                    </ul>
+                </section>
+
+                <section class="help-section">
+                    <h3>🌐 ブラウザ互換性</h3>
+                    <p>このアプリは以下のブラウザで動作確認されています：</p>
+                    <ul class="help-list">
+                        <li>Google Chrome 90以降</li>
+                        <li>Mozilla Firefox 88以降</li>
+                        <li>Microsoft Edge 90以降</li>
+                        <li>Safari 14以降</li>
+                    </ul>
+                    <p class="help-note">⚠️ 古いブラウザでは一部機能が動作しない可能性があります。</p>
+                </section>
+
+                <section class="help-section">
+                    <h3>📱 モバイルデバイス</h3>
+                    <ul class="help-list">
+                        <li>モバイルブラウザでは印刷機能が制限される場合があります</li>
+                        <li>一部のモバイルブラウザではPDF保存オプションが利用できない場合があります</li>
+                        <li>デスクトップブラウザでの使用を推奨します</li>
+                    </ul>
+                </section>
+
+                <section class="help-section">
+                    <h3>⚡ パフォーマンス</h3>
+                    <ul class="help-list">
+                        <li>大きなページや画像が多いページは読み込みに時間がかかります</li>
+                        <li>バッチ処理では各URLを順次処理するため、多数のURLでは時間がかかります</li>
+                        <li>タイムアウト時間は30秒に設定されています</li>
+                    </ul>
+                </section>
+
+                <section class="help-section">
+                    <h3>🔐 セキュリティとプライバシー</h3>
+                    <ul class="help-list">
+                        <li>すべての処理はブラウザ内で完結し、外部サーバーにデータは送信されません</li>
+                        <li>設定情報はブラウザのlocalStorageに保存されます</li>
+                        <li>URLや変換内容は記録されません</li>
+                    </ul>
+                </section>
+
+                <section class="help-section">
+                    <h3>💡 推奨される使用方法</h3>
+                    <ul class="help-list">
+                        <li>同一オリジンのページで使用する</li>
+                        <li>公開されているページで使用する（認証不要）</li>
+                        <li>デスクトップブラウザの最新版を使用する</li>
+                        <li>安定したネットワーク接続環境で使用する</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close-modal="limitations-modal">閉じる</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-links">
+                <a href="#" data-open-modal="help-modal">使用方法</a>
+                <a href="#" data-open-modal="limitations-modal">制限事項</a>
+                <a href="https://github.com/yourusername/web-to-pdf-converter" target="_blank" rel="noopener noreferrer">GitHub</a>
+            </div>
+            <p class="copyright">&copy; 2025 Web to PDF Converter</p>
+        </div>
+    </footer>
+
+    <script src="js/utils.js"></script>
+    <script src="js/converter.js"></script>
+    <script src="js/batch.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

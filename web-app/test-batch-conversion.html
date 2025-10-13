@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>バッチ変換テスト - Web to PDF Converter</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        h1 {
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .test-section h2 {
+            color: #1e293b;
+            margin-top: 0;
+        }
+        .test-case {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-left: 4px solid #3b82f6;
+        }
+        .test-case h3 {
+            margin: 0 0 10px 0;
+            color: #334155;
+            font-size: 16px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .test-result.success {
+            background: #d1fae5;
+            border: 1px solid #10b981;
+            color: #065f46;
+        }
+        .test-result.error {
+            background: #fee2e2;
+            border: 1px solid #ef4444;
+            color: #991b1b;
+        }
+        .test-result.info {
+            background: #dbeafe;
+            border: 1px solid #3b82f6;
+            color: #1e40af;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+        .progress-display {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 6px;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+        .url-list {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .url-item {
+            padding: 5px;
+            margin: 3px 0;
+            border-left: 3px solid #cbd5e1;
+        }
+        .url-item.processing {
+            border-left-color: #3b82f6;
+            background: #dbeafe;
+        }
+        .url-item.success {
+            border-left-color: #10b981;
+            background: #d1fae5;
+        }
+        .url-item.failed {
+            border-left-color: #ef4444;
+            background: #fee2e2;
+        }
+        .summary {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+        .note {
+            padding: 10px;
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 バッチ変換機能テスト</h1>
+        <p>要件 3.1, 3.2, 3.3, 3.4, 3.5 の動作確認</p>
+
+        <div class="note">
+            <strong>⚠️ 注意:</strong> このテストでは実際に印刷ダイアログが表示されます。
+            各URLの処理時に印刷ダイアログが開くので、キャンセルまたは保存してください。
+        </div>
+
+        <!-- テスト1: 基本的なバッチ処理 -->
+        <div class="test-section">
+            <h2>テスト1: 基本的なバッチ処理（3つのURL）</h2>
+            <p>要件 3.1, 3.2 の確認: 複数URLの入力と順次処理</p>
+            
+            <div class="test-case">
+                <h3>テストケース: 有効な3つのURLをバッチ処理</h3>
+                <button id="test1-run">テスト実行</button>
+                <button id="test1-stop" disabled>停止</button>
+                
+                <div id="test1-urls" class="url-list" style="display:none;">
+                    <div class="url-item" data-url="https://example.com">https://example.com</div>
+                    <div class="url-item" data-url="https://www.wikipedia.org">https://www.wikipedia.org</div>
+                    <div class="url-item" data-url="https://github.com">https://github.com</div>
+                </div>
+                
+                <div id="test1-progress" class="progress-display" style="display:none;">
+                    <div><strong>進捗状況:</strong> <span id="test1-progress-text">0/0</span></div>
+                    <div class="progress-bar">
+                        <div id="test1-progress-fill" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div><strong>現在処理中:</strong> <span id="test1-current-url">-</span></div>
+                </div>
+                
+                <div id="test1-result"></div>
+            </div>
+        </div>
+
+        <!-- テスト2: 進捗表示の確認 -->
+        <div class="test-section">
+            <h2>テスト2: 進捗表示の更新確認</h2>
+            <p>要件 3.3 の確認: 各URLの進捗状況表示</p>
+            
+            <div class="test-case">
+                <h3>テストケース: 5つのURLで進捗表示を確認</h3>
+                <button id="test2-run">テスト実行</button>
+                
+                <div id="test2-urls" class="url-list" style="display:none;">
+                    <div class="url-item" data-url="https://example.com">https://example.com</div>
+                    <div class="url-item" data-url="https://www.wikipedia.org">https://www.wikipedia.org</div>
+                    <div class="url-item" data-url="https://github.com">https://github.com</div>
+                    <div class="url-item" data-url="https://developer.mozilla.org">https://developer.mozilla.org</div>
+                    <div class="url-item" data-url="https://www.w3.org">https://www.w3.org</div>
+                </div>
+                
+                <div id="test2-progress" class="progress-display" style="display:none;">
+                    <div><strong>進捗状況:</strong> <span id="test2-progress-text">0/0</span></div>
+                    <div class="progress-bar">
+                        <div id="test2-progress-fill" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div><strong>現在処理中:</strong> <span id="test2-current-url">-</span></div>
+                    <div><strong>ステータス:</strong> <span id="test2-status">待機中</span></div>
+                </div>
+                
+                <div id="test2-result"></div>
+            </div>
+        </div>
+
+        <!-- テスト3: エラーハンドリング -->
+        <div class="test-section">
+            <h2>テスト3: エラーハンドリングと継続処理</h2>
+            <p>要件 3.5 の確認: 一部のURLが失敗しても残りを処理</p>
+            
+            <div class="test-case">
+                <h3>テストケース: 有効なURLと無効なURLの混在</h3>
+                <button id="test3-run">テスト実行</button>
+                
+                <div id="test3-urls" class="url-list" style="display:none;">
+                    <div class="url-item" data-url="https://example.com">https://example.com (有効)</div>
+                    <div class="url-item" data-url="invalid-url">invalid-url (無効)</div>
+                    <div class="url-item" data-url="https://www.wikipedia.org">https://www.wikipedia.org (有効)</div>
+                    <div class="url-item" data-url="http://this-domain-does-not-exist-12345.com">http://this-domain-does-not-exist-12345.com (存在しない)</div>
+                    <div class="url-item" data-url="https://github.com">https://github.com (有効)</div>
+                </div>
+                
+                <div id="test3-progress" class="progress-display" style="display:none;">
+                    <div><strong>進捗状況:</strong> <span id="test3-progress-text">0/0</span></div>
+                    <div class="progress-bar">
+                        <div id="test3-progress-fill" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div id="test3-result"></div>
+            </div>
+        </div>
+
+        <!-- テスト4: 結果サマリー -->
+        <div class="test-section">
+            <h2>テスト4: 結果サマリーの表示</h2>
+            <p>要件 3.4, 3.5 の確認: 成功/失敗の統計表示</p>
+            
+            <div class="test-case">
+                <h3>テストケース: 処理結果のサマリー生成</h3>
+                <button id="test4-run">テスト実行</button>
+                
+                <div id="test4-urls" class="url-list" style="display:none;">
+                    <div class="url-item" data-url="https://example.com">https://example.com</div>
+                    <div class="url-item" data-url="invalid-url-1">invalid-url-1</div>
+                    <div class="url-item" data-url="https://www.wikipedia.org">https://www.wikipedia.org</div>
+                </div>
+                
+                <div id="test4-progress" class="progress-display" style="display:none;">
+                    <div><strong>進捗状況:</strong> <span id="test4-progress-text">0/0</span></div>
+                    <div class="progress-bar">
+                        <div id="test4-progress-fill" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div id="test4-result"></div>
+                <div id="test4-summary" class="summary" style="display:none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/converter.js"></script>
+    <script src="js/batch.js"></script>
+    <script>
+        // テストヘルパー関数
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="test-result ${type}">${message}</div>`;
+        }
+
+        function updateProgress(testId, current, total, url, status) {
+            const progressText = document.getElementById(`${testId}-progress-text`);
+            const progressFill = document.getElementById(`${testId}-progress-fill`);
+            const currentUrl = document.getElementById(`${testId}-current-url`);
+            const statusElement = document.getElementById(`${testId}-status`);
+            
+            if (progressText) progressText.textContent = `${current}/${total}`;
+            if (progressFill) progressFill.style.width = `${(current / total) * 100}%`;
+            if (currentUrl) currentUrl.textContent = url || '-';
+            if (statusElement) statusElement.textContent = status || '処理中';
+            
+            // URL項目のステータス更新
+            const urlItems = document.querySelectorAll(`#${testId}-urls .url-item`);
+            urlItems.forEach((item, index) => {
+                item.classList.remove('processing', 'success', 'failed');
+                if (index < current - 1) {
+                    item.classList.add('success');
+                } else if (index === current - 1) {
+                    item.classList.add(status === 'success' ? 'success' : status === 'failed' ? 'failed' : 'processing');
+                }
+            });
+        }
+
+        function showSummary(elementId, results) {
+            const element = document.getElementById(elementId);
+            element.style.display = 'block';
+            element.innerHTML = `
+                <h3>📊 処理結果サマリー</h3>
+                <div class="summary-item">
+                    <span>合計URL数:</span>
+                    <strong>${results.total}</strong>
+                </div>
+                <div class="summary-item">
+                    <span>✅ 成功:</span>
+                    <strong style="color: #10b981;">${results.successful}</strong>
+                </div>
+                <div class="summary-item">
+                    <span>❌ 失敗:</span>
+                    <strong style="color: #ef4444;">${results.failed}</strong>
+                </div>
+                <div class="summary-item">
+                    <span>成功率:</span>
+                    <strong>${((results.successful / results.total) * 100).toFixed(1)}%</strong>
+                </div>
+            `;
+            
+            if (results.results && results.results.length > 0) {
+                const failedUrls = results.results.filter(r => r.status === 'failed');
+                if (failedUrls.length > 0) {
+                    element.innerHTML += `
+                        <div style="margin-top: 15px;">
+                            <h4>失敗したURL:</h4>
+                            <ul style="margin: 5px 0; padding-left: 20px;">
+                                ${failedUrls.map(r => `<li><code>${r.url}</code><br><small>${r.error || '不明なエラー'}</small></li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // テスト1: 基本的なバッチ処理
+        document.getElementById('test1-run').addEventListener('click', async () => {
+            const testId = 'test1';
+            const button = document.getElementById(`${testId}-run`);
+            button.disabled = true;
+            
+            document.getElementById(`${testId}-urls`).style.display = 'block';
+            document.getElementById(`${testId}-progress`).style.display = 'block';
+            showResult(`${testId}-result`, '⏳ テスト実行中...', 'info');
+            
+            const urls = [
+                'https://example.com',
+                'https://www.wikipedia.org',
+                'https://github.com'
+            ];
+            
+            const converter = new PDFConverter();
+            const batchProcessor = new BatchProcessor(converter);
+            
+            try {
+                const results = await batchProcessor.processBatch(urls, {}, (progress) => {
+                    updateProgress(testId, progress.current, progress.total, progress.url, progress.status);
+                });
+                
+                showResult(`${testId}-result`, 
+                    `✅ テスト完了<br>` +
+                    `合計: ${results.total} URLs<br>` +
+                    `成功: ${results.successful}<br>` +
+                    `失敗: ${results.failed}`, 
+                    results.failed === 0 ? 'success' : 'info'
+                );
+            } catch (error) {
+                showResult(`${testId}-result`, `❌ エラー: ${error.message}`, 'error');
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        // テスト2: 進捗表示の確認
+        document.getElementById('test2-run').addEventListener('click', async () => {
+            const testId = 'test2';
+            const button = document.getElementById(`${testId}-run`);
+            button.disabled = true;
+            
+            document.getElementById(`${testId}-urls`).style.display = 'block';
+            document.getElementById(`${testId}-progress`).style.display = 'block';
+            showResult(`${testId}-result`, '⏳ テスト実行中...', 'info');
+            
+            const urls = [
+                'https://example.com',
+                'https://www.wikipedia.org',
+                'https://github.com',
+                'https://developer.mozilla.org',
+                'https://www.w3.org'
+            ];
+            
+            const converter = new PDFConverter();
+            const batchProcessor = new BatchProcessor(converter);
+            
+            try {
+                const results = await batchProcessor.processBatch(urls, {}, (progress) => {
+                    updateProgress(testId, progress.current, progress.total, progress.url, progress.status);
+                });
+                
+                showResult(`${testId}-result`, 
+                    `✅ テスト完了 - 進捗表示が正しく更新されました<br>` +
+                    `合計: ${results.total} URLs<br>` +
+                    `成功: ${results.successful}<br>` +
+                    `失敗: ${results.failed}`, 
+                    'success'
+                );
+            } catch (error) {
+                showResult(`${testId}-result`, `❌ エラー: ${error.message}`, 'error');
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        // テスト3: エラーハンドリング
+        document.getElementById('test3-run').addEventListener('click', async () => {
+            const testId = 'test3';
+            const button = document.getElementById(`${testId}-run`);
+            button.disabled = true;
+            
+            document.getElementById(`${testId}-urls`).style.display = 'block';
+            document.getElementById(`${testId}-progress`).style.display = 'block';
+            showResult(`${testId}-result`, '⏳ テスト実行中...', 'info');
+            
+            const urls = [
+                'https://example.com',
+                'invalid-url',
+                'https://www.wikipedia.org',
+                'http://this-domain-does-not-exist-12345.com',
+                'https://github.com'
+            ];
+            
+            const converter = new PDFConverter();
+            const batchProcessor = new BatchProcessor(converter);
+            
+            try {
+                const results = await batchProcessor.processBatch(urls, {}, (progress) => {
+                    updateProgress(testId, progress.current, progress.total, progress.url, progress.status);
+                });
+                
+                const hasFailures = results.failed > 0;
+                const continuedProcessing = results.total === urls.length;
+                
+                showResult(`${testId}-result`, 
+                    `${continuedProcessing ? '✅' : '❌'} テスト完了<br>` +
+                    `合計: ${results.total} URLs<br>` +
+                    `成功: ${results.successful}<br>` +
+                    `失敗: ${results.failed}<br>` +
+                    `<br><strong>検証結果:</strong><br>` +
+                    `${hasFailures ? '✅' : '❌'} エラーが正しく検出されました<br>` +
+                    `${continuedProcessing ? '✅' : '❌'} 失敗後も処理が継続されました`, 
+                    continuedProcessing && hasFailures ? 'success' : 'error'
+                );
+            } catch (error) {
+                showResult(`${testId}-result`, `❌ エラー: ${error.message}`, 'error');
+            } finally {
+                button.disabled = false;
+            }
+        });
+
+        // テスト4: 結果サマリー
+        document.getElementById('test4-run').addEventListener('click', async () => {
+            const testId = 'test4';
+            const button = document.getElementById(`${testId}-run`);
+            button.disabled = true;
+            
+            document.getElementById(`${testId}-urls`).style.display = 'block';
+            document.getElementById(`${testId}-progress`).style.display = 'block';
+            showResult(`${testId}-result`, '⏳ テスト実行中...', 'info');
+            
+            const urls = [
+                'https://example.com',
+                'invalid-url-1',
+                'https://www.wikipedia.org'
+            ];
+            
+            const converter = new PDFConverter();
+            const batchProcessor = new BatchProcessor(converter);
+            
+            try {
+                const results = await batchProcessor.processBatch(urls, {}, (progress) => {
+                    updateProgress(testId, progress.current, progress.total, progress.url, progress.status);
+                });
+                
+                showSummary(`${testId}-summary`, results);
+                
+                const hasSummary = results.total > 0 && 
+                                  typeof results.successful === 'number' && 
+                                  typeof results.failed === 'number';
+                
+                showResult(`${testId}-result`, 
+                    `${hasSummary ? '✅' : '❌'} テスト完了<br>` +
+                    `<br><strong>検証結果:</strong><br>` +
+                    `${hasSummary ? '✅' : '❌'} 結果サマリーが正しく生成されました<br>` +
+                    `${results.results ? '✅' : '❌'} 詳細な結果情報が含まれています`, 
+                    hasSummary ? 'success' : 'error'
+                );
+            } catch (error) {
+                showResult(`${testId}-result`, `❌ エラー: ${error.message}`, 'error');
+            } finally {
+                button.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>レスポンシブデザインテスト - Web to PDF Converter</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Sans', sans-serif;
+      background-color: #f8fafc;
+      padding: 20px;
+    }
+
+    .test-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .test-header {
+      background-color: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+
+    .test-header h1 {
+      font-size: 28px;
+      color: #2563eb;
+      margin-bottom: 8px;
+    }
+
+    .test-header p {
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .viewport-controls {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 24px;
+    }
+
+    .viewport-controls h2 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: #1e293b;
+    }
+
+    .viewport-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .viewport-btn {
+      padding: 10px 20px;
+      border: 2px solid #e2e8f0;
+      background-color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .viewport-btn:hover {
+      border-color: #2563eb;
+      background-color: #f0f7ff;
+    }
+
+    .viewport-btn.active {
+      border-color: #2563eb;
+      background-color: #2563eb;
+      color: white;
+    }
+
+    .viewport-btn-label {
+      font-weight: 600;
+    }
+
+    .viewport-btn-size {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .custom-size {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .custom-size label {
+      font-weight: 500;
+      color: #1e293b;
+    }
+
+    .custom-size input {
+      width: 100px;
+      padding: 8px 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .custom-size input:focus {
+      outline: none;
+      border-color: #2563eb;
+    }
+
+    .custom-size button {
+      padding: 8px 16px;
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .custom-size button:hover {
+      background-color: #1d4ed8;
+    }
+
+    .iframe-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 600px;
+    }
+
+    .iframe-wrapper {
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      background-color: white;
+    }
+
+    .iframe-info {
+      background-color: #f8fafc;
+      padding: 8px 16px;
+      border-bottom: 1px solid #e2e8f0;
+      font-size: 12px;
+      color: #64748b;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    iframe {
+      display: block;
+      border: none;
+      background-color: white;
+    }
+
+    .test-checklist {
+      background-color: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-top: 24px;
+    }
+
+    .test-checklist h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #1e293b;
+    }
+
+    .checklist-section {
+      margin-bottom: 24px;
+    }
+
+    .checklist-section h3 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #2563eb;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .checklist-section h3::before {
+      content: '📱';
+      font-size: 20px;
+    }
+
+    .checklist-section:nth-child(2) h3::before {
+      content: '💻';
+    }
+
+    .checklist-section:nth-child(3) h3::before {
+      content: '🖥️';
+    }
+
+    .checklist-items {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .checklist-items li {
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      background-color: #f8fafc;
+      border-radius: 6px;
+      border-left: 3px solid #e2e8f0;
+      font-size: 14px;
+      color: #1e293b;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .checklist-items li:hover {
+      background-color: #f0f7ff;
+      border-left-color: #2563eb;
+    }
+
+    .checklist-items li::before {
+      content: '☐ ';
+      margin-right: 8px;
+      font-size: 16px;
+      color: #64748b;
+    }
+
+    .checklist-items li.checked {
+      background-color: #f0fdf4;
+      border-left-color: #10b981;
+    }
+
+    .checklist-items li.checked::before {
+      content: '✅ ';
+    }
+
+    .test-results {
+      background-color: white;
+      padding: 24px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-top: 24px;
+    }
+
+    .test-results h2 {
+      font-size: 20px;
+      margin-bottom: 16px;
+      color: #1e293b;
+    }
+
+    .results-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .result-card {
+      padding: 16px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .result-card.total {
+      background-color: #f0f7ff;
+      border: 2px solid #2563eb;
+    }
+
+    .result-card.passed {
+      background-color: #f0fdf4;
+      border: 2px solid #10b981;
+    }
+
+    .result-card.pending {
+      background-color: #fef3c7;
+      border: 2px solid #f59e0b;
+    }
+
+    .result-value {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .result-card.total .result-value {
+      color: #2563eb;
+    }
+
+    .result-card.passed .result-value {
+      color: #10b981;
+    }
+
+    .result-card.pending .result-value {
+      color: #f59e0b;
+    }
+
+    .result-label {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .export-btn {
+      padding: 12px 24px;
+      background-color: #10b981;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      transition: background-color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .export-btn:hover {
+      background-color: #059669;
+    }
+
+    .export-btn::before {
+      content: '📄';
+      font-size: 16px;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 12px;
+      }
+
+      .test-header h1 {
+        font-size: 22px;
+      }
+
+      .viewport-buttons {
+        flex-direction: column;
+      }
+
+      .viewport-btn {
+        width: 100%;
+      }
+
+      .custom-size {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .custom-size input {
+        width: 100%;
+      }
+
+      .results-summary {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="test-container">
+    <div class="test-header">
+      <h1>📱 レスポンシブデザインテスト</h1>
+      <p>異なるビューポートサイズでアプリケーションの表示を確認します</p>
+    </div>
+
+    <div class="viewport-controls">
+      <h2>ビューポートサイズ選択</h2>
+      <div class="viewport-buttons">
+        <button class="viewport-btn" data-width="375" data-height="667" data-device="mobile">
+          <span class="viewport-btn-label">📱 iPhone SE</span>
+          <span class="viewport-btn-size">375 × 667</span>
+        </button>
+        <button class="viewport-btn" data-width="390" data-height="844" data-device="mobile">
+          <span class="viewport-btn-label">📱 iPhone 12/13</span>
+          <span class="viewport-btn-size">390 × 844</span>
+        </button>
+        <button class="viewport-btn" data-width="360" data-height="640" data-device="mobile">
+          <span class="viewport-btn-label">📱 Android (小)</span>
+          <span class="viewport-btn-size">360 × 640</span>
+        </button>
+        <button class="viewport-btn" data-width="768" data-height="1024" data-device="tablet">
+          <span class="viewport-btn-label">💻 iPad</span>
+          <span class="viewport-btn-size">768 × 1024</span>
+        </button>
+        <button class="viewport-btn" data-width="820" data-height="1180" data-device="tablet">
+          <span class="viewport-btn-label">💻 iPad Air</span>
+          <span class="viewport-btn-size">820 × 1180</span>
+        </button>
+        <button class="viewport-btn active" data-width="1280" data-height="800" data-device="desktop">
+          <span class="viewport-btn-label">🖥️ デスクトップ (小)</span>
+          <span class="viewport-btn-size">1280 × 800</span>
+        </button>
+        <button class="viewport-btn" data-width="1920" data-height="1080" data-device="desktop">
+          <span class="viewport-btn-label">🖥️ デスクトップ (大)</span>
+          <span class="viewport-btn-size">1920 × 1080</span>
+        </button>
+      </div>
+
+      <div class="custom-size">
+        <label>カスタムサイズ:</label>
+        <input type="number" id="custom-width" placeholder="幅 (px)" value="1280">
+        <label>×</label>
+        <input type="number" id="custom-height" placeholder="高さ (px)" value="800">
+        <button id="apply-custom">適用</button>
+      </div>
+    </div>
+
+    <div class="iframe-container">
+      <div class="iframe-wrapper" id="iframe-wrapper">
+        <div class="iframe-info" id="iframe-info">
+          デスクトップ (小) - 1280 × 800
+        </div>
+        <iframe id="app-iframe" src="index.html" width="1280" height="800"></iframe>
+      </div>
+    </div>
+
+    <div class="test-checklist">
+      <h2>✅ テストチェックリスト</h2>
+      
+      <div class="checklist-section">
+        <h3>モバイル (320px - 640px)</h3>
+        <ul class="checklist-items" data-device="mobile">
+          <li>ヘッダーが適切にコンパクト化されている</li>
+          <li>モード切り替えタブが縦積みで表示される</li>
+          <li>入力フィールドがタッチフレンドリーなサイズ (最小44px)</li>
+          <li>ボタンが全幅で表示され、タップしやすい</li>
+          <li>設定パネルが1カラムで表示される</li>
+          <li>余白設定が2カラムで表示される</li>
+          <li>進捗表示が縦積みで表示される</li>
+          <li>バッチ統計が1カラムで表示される</li>
+          <li>フッターリンクが縦積みで表示される</li>
+          <li>テキストが読みやすく、横スクロールが発生しない</li>
+        </ul>
+      </div>
+
+      <div class="checklist-section">
+        <h3>タブレット (640px - 1024px)</h3>
+        <ul class="checklist-items" data-device="tablet">
+          <li>モード切り替えタブが横並びで表示される</li>
+          <li>設定パネルが2カラムで表示される</li>
+          <li>余白設定が4カラムで表示される</li>
+          <li>進捗表示が横並びで表示される</li>
+          <li>バッチ統計が2カラムで表示される</li>
+          <li>ボタンが適度な幅で表示される</li>
+          <li>フッターリンクが横並びで表示される</li>
+          <li>レイアウトが適切にバランスされている</li>
+        </ul>
+      </div>
+
+      <div class="checklist-section">
+        <h3>デスクトップ (1024px以上)</h3>
+        <ul class="checklist-items" data-device="desktop">
+          <li>コンテンツが最大幅 (1200px) に制限されている</li>
+          <li>ヘッダーが広々としたレイアウトで表示される</li>
+          <li>設定パネルが2カラムで表示される</li>
+          <li>バッチ統計が3カラムで表示される</li>
+          <li>進捗表示がサイドバイサイドで表示される</li>
+          <li>ホバー効果が適切に動作する</li>
+          <li>余白が適切に設定されている</li>
+          <li>全体的なレイアウトが美しく整っている</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="test-results">
+      <h2>📊 テスト結果</h2>
+      <div class="results-summary">
+        <div class="result-card total">
+          <div class="result-value" id="total-tests">26</div>
+          <div class="result-label">総テスト項目</div>
+        </div>
+        <div class="result-card passed">
+          <div class="result-value" id="passed-tests">0</div>
+          <div class="result-label">合格</div>
+        </div>
+        <div class="result-card pending">
+          <div class="result-value" id="pending-tests">26</div>
+          <div class="result-label">未実施</div>
+        </div>
+      </div>
+      <button class="export-btn" id="export-results">テスト結果をエクスポート</button>
+    </div>
+  </div>
+
+  <script>
+    // DOM要素の取得
+    const iframeWrapper = document.getElementById('iframe-wrapper');
+    const iframe = document.getElementById('app-iframe');
+    const iframeInfo = document.getElementById('iframe-info');
+    const viewportButtons = document.querySelectorAll('.viewport-btn');
+    const customWidthInput = document.getElementById('custom-width');
+    const customHeightInput = document.getElementById('custom-height');
+    const applyCustomBtn = document.getElementById('apply-custom');
+    const checklistItems = document.querySelectorAll('.checklist-items li');
+    const totalTestsEl = document.getElementById('total-tests');
+    const passedTestsEl = document.getElementById('passed-tests');
+    const pendingTestsEl = document.getElementById('pending-tests');
+    const exportBtn = document.getElementById('export-results');
+
+    // ビューポートサイズの変更
+    function changeViewport(width, height, deviceName) {
+      iframe.width = width;
+      iframe.height = height;
+      iframeWrapper.style.width = width + 'px';
+      iframeWrapper.style.height = (height + 40) + 'px'; // info barの高さを追加
+      
+      let deviceType = '';
+      if (width < 640) {
+        deviceType = 'モバイル';
+      } else if (width < 1024) {
+        deviceType = 'タブレット';
+      } else {
+        deviceType = 'デスクトップ';
+      }
+      
+      iframeInfo.textContent = `${deviceName || deviceType} - ${width} × ${height}`;
+      
+      // カスタム入力を更新
+      customWidthInput.value = width;
+      customHeightInput.value = height;
+    }
+
+    // ビューポートボタンのクリックイベント
+    viewportButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        viewportButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        const width = parseInt(button.dataset.width);
+        const height = parseInt(button.dataset.height);
+        const deviceName = button.querySelector('.viewport-btn-label').textContent;
+        
+        changeViewport(width, height, deviceName);
+      });
+    });
+
+    // カスタムサイズの適用
+    applyCustomBtn.addEventListener('click', () => {
+      const width = parseInt(customWidthInput.value) || 1280;
+      const height = parseInt(customHeightInput.value) || 800;
+      
+      viewportButtons.forEach(btn => btn.classList.remove('active'));
+      changeViewport(width, height, 'カスタム');
+    });
+
+    // チェックリストアイテムのクリックイベント
+    checklistItems.forEach(item => {
+      item.addEventListener('click', () => {
+        item.classList.toggle('checked');
+        updateTestResults();
+      });
+    });
+
+    // テスト結果の更新
+    function updateTestResults() {
+      const total = checklistItems.length;
+      const passed = document.querySelectorAll('.checklist-items li.checked').length;
+      const pending = total - passed;
+      
+      totalTestsEl.textContent = total;
+      passedTestsEl.textContent = passed;
+      pendingTestsEl.textContent = pending;
+    }
+
+    // テスト結果のエクスポート
+    exportBtn.addEventListener('click', () => {
+      const results = {
+        timestamp: new Date().toISOString(),
+        testDate: new Date().toLocaleDateString('ja-JP'),
+        total: checklistItems.length,
+        passed: document.querySelectorAll('.checklist-items li.checked').length,
+        pending: checklistItems.length - document.querySelectorAll('.checklist-items li.checked').length,
+        details: {
+          mobile: [],
+          tablet: [],
+          desktop: []
+        }
+      };
+
+      // 各デバイスタイプのテスト結果を収集
+      document.querySelectorAll('.checklist-section').forEach((section, index) => {
+        const deviceType = ['mobile', 'tablet', 'desktop'][index];
+        const items = section.querySelectorAll('.checklist-items li');
+        
+        items.forEach(item => {
+          results.details[deviceType].push({
+            test: item.textContent.replace(/^[☐✅]\s*/, ''),
+            passed: item.classList.contains('checked')
+          });
+        });
+      });
+
+      // JSONファイルとしてダウンロード
+      const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `responsive-test-results-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      // マークダウンレポートも生成
+      generateMarkdownReport(results);
+    });
+
+    // マークダウンレポートの生成
+    function generateMarkdownReport(results) {
+      const passRate = ((results.passed / results.total) * 100).toFixed(1);
+      
+      let markdown = `# レスポンシブデザインテスト結果\n\n`;
+      markdown += `**テスト日時**: ${results.testDate}\n\n`;
+      markdown += `## 📊 サマリー\n\n`;
+      markdown += `- **総テスト項目**: ${results.total}\n`;
+      markdown += `- **合格**: ${results.passed}\n`;
+      markdown += `- **未実施**: ${results.pending}\n`;
+      markdown += `- **合格率**: ${passRate}%\n\n`;
+      
+      markdown += `## 📱 モバイル (320px - 640px)\n\n`;
+      results.details.mobile.forEach(item => {
+        markdown += `- [${item.passed ? 'x' : ' '}] ${item.test}\n`;
+      });
+      
+      markdown += `\n## 💻 タブレット (640px - 1024px)\n\n`;
+      results.details.tablet.forEach(item => {
+        markdown += `- [${item.passed ? 'x' : ' '}] ${item.test}\n`;
+      });
+      
+      markdown += `\n## 🖥️ デスクトップ (1024px以上)\n\n`;
+      results.details.desktop.forEach(item => {
+        markdown += `- [${item.passed ? 'x' : ' '}] ${item.test}\n`;
+      });
+      
+      markdown += `\n## 要件との対応\n\n`;
+      markdown += `- **要件 8.1**: モバイルレイアウトの実装 - ${results.details.mobile.filter(i => i.passed).length}/${results.details.mobile.length} 項目合格\n`;
+      markdown += `- **要件 8.2**: タブレットレイアウトの実装 - ${results.details.tablet.filter(i => i.passed).length}/${results.details.tablet.length} 項目合格\n`;
+      markdown += `- **要件 8.3**: デスクトップレイアウトの実装 - ${results.details.desktop.filter(i => i.passed).length}/${results.details.desktop.length} 項目合格\n`;
+      markdown += `- **要件 8.4**: レスポンシブデザインの実装 - 全体 ${passRate}% 合格\n`;
+      
+      // マークダウンファイルとしてダウンロード
+      const blob = new Blob([markdown], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `RESPONSIVE_TEST_REPORT_${Date.now()}.md`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // 初期化
+    updateTestResults();
+  </script>
+</body>
+</html>

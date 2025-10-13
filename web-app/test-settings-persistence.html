@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>設定の永続化テスト - Web to PDF Converter</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans JP', sans-serif;
+      line-height: 1.6;
+      padding: 20px;
+      background-color: #f8fafc;
+      color: #1e293b;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      color: #2563eb;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .subtitle {
+      color: #64748b;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .test-section {
+      margin-bottom: 30px;
+      padding: 20px;
+      background: #f8fafc;
+      border-radius: 6px;
+      border-left: 4px solid #2563eb;
+    }
+
+    .test-section h2 {
+      color: #1e293b;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+
+    .test-section p {
+      margin-bottom: 15px;
+      color: #475569;
+    }
+
+    .test-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 15px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    button:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    button.secondary {
+      background: #64748b;
+    }
+
+    button.secondary:hover {
+      background: #475569;
+    }
+
+    button.success {
+      background: #10b981;
+    }
+
+    button.success:hover {
+      background: #059669;
+    }
+
+    button.danger {
+      background: #ef4444;
+    }
+
+    button.danger:hover {
+      background: #dc2626;
+    }
+
+    .test-result {
+      margin-top: 15px;
+      padding: 15px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .test-result.success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #10b981;
+    }
+
+    .test-result.error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #ef4444;
+    }
+
+    .test-result.info {
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #2563eb;
+    }
+
+    .test-result.warning {
+      background: #fef3c7;
+      color: #92400e;
+      border: 1px solid #f59e0b;
+    }
+
+    .settings-display {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      margin-top: 15px;
+    }
+
+    .settings-display h3 {
+      margin-bottom: 10px;
+      color: #1e293b;
+      font-size: 16px;
+    }
+
+    .settings-display pre {
+      background: #f1f5f9;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
+      font-size: 12px;
+    }
+
+    .test-steps {
+      background: white;
+      padding: 15px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 15px;
+    }
+
+    .test-steps ol {
+      margin-left: 20px;
+    }
+
+    .test-steps li {
+      margin-bottom: 8px;
+      color: #475569;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+
+    .status-badge.pending {
+      background: #e2e8f0;
+      color: #64748b;
+    }
+
+    .status-badge.running {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .status-badge.passed {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-badge.failed {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .link-section {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .link-section a {
+      color: #2563eb;
+      text-decoration: none;
+      margin-right: 20px;
+    }
+
+    .link-section a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>設定の永続化テスト</h1>
+    <p class="subtitle">タスク 11.4: 設定を変更してページをリロードし、設定が保持されていることを確認</p>
+
+    <!-- テスト1: デフォルト設定の確認 -->
+    <div class="test-section">
+      <h2>テスト1: デフォルト設定の確認<span class="status-badge pending" id="test1-status">未実行</span></h2>
+      <div class="test-steps">
+        <p><strong>テスト手順:</strong></p>
+        <ol>
+          <li>localStorageをクリア</li>
+          <li>デフォルト設定を読み込み</li>
+          <li>期待される値と一致するか確認</li>
+        </ol>
+      </div>
+      <div class="test-controls">
+        <button onclick="runTest1()">テスト1を実行</button>
+        <button class="secondary" onclick="clearLocalStorage()">localStorageをクリア</button>
+      </div>
+      <div id="test1-result"></div>
+    </div>
+
+    <!-- テスト2: 設定の保存 -->
+    <div class="test-section">
+      <h2>テスト2: 設定の保存<span class="status-badge pending" id="test2-status">未実行</span></h2>
+      <div class="test-steps">
+        <p><strong>テスト手順:</strong></p>
+        <ol>
+          <li>カスタム設定を作成</li>
+          <li>localStorageに保存</li>
+          <li>保存された値を確認</li>
+        </ol>
+      </div>
+      <div class="test-controls">
+        <button onclick="runTest2()">テスト2を実行</button>
+      </div>
+      <div id="test2-result"></div>
+    </div>
+
+    <!-- テスト3: 設定の読み込み -->
+    <div class="test-section">
+      <h2>テスト3: 設定の読み込み<span class="status-badge pending" id="test3-status">未実行</span></h2>
+      <div class="test-steps">
+        <p><strong>テスト手順:</strong></p>
+        <ol>
+          <li>保存された設定をlocalStorageから読み込み</li>
+          <li>読み込んだ値が保存した値と一致するか確認</li>
+        </ol>
+      </div>
+      <div class="test-controls">
+        <button onclick="runTest3()">テスト3を実行</button>
+      </div>
+      <div id="test3-result"></div>
+    </div>
+
+    <!-- テスト4: ページリロード後の永続化 -->
+    <div class="test-section">
+      <h2>テスト4: ページリロード後の永続化<span class="status-badge pending" id="test4-status">未実行</span></h2>
+      <div class="test-steps">
+        <p><strong>テスト手順:</strong></p>
+        <ol>
+          <li>カスタム設定を保存</li>
+          <li>ページをリロード</li>
+          <li>リロード後に設定が保持されているか確認</li>
+        </ol>
+      </div>
+      <div class="test-controls">
+        <button onclick="runTest4Step1()">ステップ1: 設定を保存してリロード</button>
+        <button class="success" onclick="runTest4Step2()">ステップ2: リロード後の確認</button>
+      </div>
+      <div id="test4-result"></div>
+    </div>
+
+    <!-- テスト5: 実際のアプリでの動作確認 -->
+    <div class="test-section">
+      <h2>テスト5: 実際のアプリでの動作確認<span class="status-badge pending" id="test5-status">未実行</span></h2>
+      <div class="test-steps">
+        <p><strong>テスト手順:</strong></p>
+        <ol>
+          <li>メインアプリ（index.html）を開く</li>
+          <li>設定パネルで各設定を変更</li>
+          <li>ページをリロード</li>
+          <li>設定が保持されていることを確認</li>
+        </ol>
+      </div>
+      <div class="test-controls">
+        <button onclick="openMainApp()">メインアプリを開く</button>
+        <button class="secondary" onclick="checkMainAppSettings()">現在の設定を確認</button>
+      </div>
+      <div id="test5-result"></div>
+    </div>
+
+    <!-- 現在の設定表示 -->
+    <div class="settings-display">
+      <h3>現在のlocalStorage設定</h3>
+      <button class="secondary" onclick="displayCurrentSettings()">設定を表示</button>
+      <button class="danger" onclick="clearLocalStorage()">設定をクリア</button>
+      <div id="current-settings"></div>
+    </div>
+
+    <!-- リンクセクション -->
+    <div class="link-section">
+      <a href="index.html">← メインアプリに戻る</a>
+      <a href="TESTING_GUIDE.md" target="_blank">テストガイド</a>
+    </div>
+  </div>
+
+  <script>
+    // テスト用のデフォルト設定
+    const DEFAULT_SETTINGS = {
+      pageSize: 'A4',
+      orientation: 'portrait',
+      margins: {
+        top: '1cm',
+        right: '1cm',
+        bottom: '1cm',
+        left: '1cm'
+      },
+      scale: 1.0,
+      printBackground: true
+    };
+
+    // テスト用のカスタム設定
+    const CUSTOM_SETTINGS = {
+      pageSize: 'Letter',
+      orientation: 'landscape',
+      margins: {
+        top: '2cm',
+        right: '2cm',
+        bottom: '2cm',
+        left: '2cm'
+      },
+      scale: 0.9,
+      printBackground: false
+    };
+
+    // localStorageのキー
+    const STORAGE_KEY = 'pdfConverterSettings';
+
+    // テスト結果を表示
+    function showResult(elementId, message, type = 'info') {
+      const element = document.getElementById(elementId);
+      if (element) {
+        element.innerHTML = `<div class="test-result ${type}">${message}</div>`;
+      }
+    }
+
+    // ステータスバッジを更新
+    function updateStatus(testId, status) {
+      const badge = document.getElementById(`${testId}-status`);
+      if (badge) {
+        badge.className = `status-badge ${status}`;
+        badge.textContent = {
+          'pending': '未実行',
+          'running': '実行中',
+          'passed': '成功',
+          'failed': '失敗'
+        }[status] || status;
+      }
+    }
+
+    // localStorageをクリア
+    function clearLocalStorage() {
+      localStorage.removeItem(STORAGE_KEY);
+      showResult('current-settings', 'localStorageをクリアしました。', 'info');
+      displayCurrentSettings();
+    }
+
+    // 現在の設定を表示
+    function displayCurrentSettings() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      const resultDiv = document.getElementById('current-settings');
+      
+      if (saved) {
+        try {
+          const settings = JSON.parse(saved);
+          resultDiv.innerHTML = `<pre>${JSON.stringify(settings, null, 2)}</pre>`;
+        } catch (error) {
+          resultDiv.innerHTML = `<div class="test-result error">設定の解析に失敗: ${error.message}</div>`;
+        }
+      } else {
+        resultDiv.innerHTML = `<div class="test-result info">設定が保存されていません（デフォルト設定が使用されます）</div>`;
+      }
+    }
+
+    // オブジェクトの深い比較
+    function deepEqual(obj1, obj2) {
+      if (obj1 === obj2) return true;
+      
+      if (typeof obj1 !== 'object' || typeof obj2 !== 'object' || obj1 === null || obj2 === null) {
+        return false;
+      }
+      
+      const keys1 = Object.keys(obj1);
+      const keys2 = Object.keys(obj2);
+      
+      if (keys1.length !== keys2.length) return false;
+      
+      for (const key of keys1) {
+        if (!keys2.includes(key)) return false;
+        if (!deepEqual(obj1[key], obj2[key])) return false;
+      }
+      
+      return true;
+    }
+
+    // テスト1: デフォルト設定の確認
+    function runTest1() {
+      updateStatus('test1', 'running');
+      
+      try {
+        // localStorageをクリア
+        localStorage.removeItem(STORAGE_KEY);
+        
+        // デフォルト設定を取得（保存されていない場合）
+        const saved = localStorage.getItem(STORAGE_KEY);
+        
+        if (saved === null) {
+          // デフォルト設定と比較
+          const message = `✅ テスト成功\n\nlocalStorageに設定が保存されていない場合、デフォルト設定が使用されます。\n\n期待されるデフォルト設定:\n${JSON.stringify(DEFAULT_SETTINGS, null, 2)}`;
+          showResult('test1-result', message, 'success');
+          updateStatus('test1', 'passed');
+        } else {
+          throw new Error('localStorageがクリアされていません');
+        }
+      } catch (error) {
+        const message = `❌ テスト失敗\n\nエラー: ${error.message}`;
+        showResult('test1-result', message, 'error');
+        updateStatus('test1', 'failed');
+      }
+    }
+
+    // テスト2: 設定の保存
+    function runTest2() {
+      updateStatus('test2', 'running');
+      
+      try {
+        // カスタム設定を保存
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(CUSTOM_SETTINGS));
+        
+        // 保存された値を確認
+        const saved = localStorage.getItem(STORAGE_KEY);
+        const parsed = JSON.parse(saved);
+        
+        if (deepEqual(parsed, CUSTOM_SETTINGS)) {
+          const message = `✅ テスト成功\n\n設定がlocalStorageに正しく保存されました。\n\n保存された設定:\n${JSON.stringify(parsed, null, 2)}`;
+          showResult('test2-result', message, 'success');
+          updateStatus('test2', 'passed');
+        } else {
+          throw new Error('保存された設定が期待値と一致しません');
+        }
+      } catch (error) {
+        const message = `❌ テスト失敗\n\nエラー: ${error.message}`;
+        showResult('test2-result', message, 'error');
+        updateStatus('test2', 'failed');
+      }
+    }
+
+    // テスト3: 設定の読み込み
+    function runTest3() {
+      updateStatus('test3', 'running');
+      
+      try {
+        // 保存された設定を読み込み
+        const saved = localStorage.getItem(STORAGE_KEY);
+        
+        if (!saved) {
+          throw new Error('設定が保存されていません。先にテスト2を実行してください。');
+        }
+        
+        const parsed = JSON.parse(saved);
+        
+        if (deepEqual(parsed, CUSTOM_SETTINGS)) {
+          const message = `✅ テスト成功\n\n設定がlocalStorageから正しく読み込まれました。\n\n読み込まれた設定:\n${JSON.stringify(parsed, null, 2)}`;
+          showResult('test3-result', message, 'success');
+          updateStatus('test3', 'passed');
+        } else {
+          throw new Error('読み込まれた設定が期待値と一致しません');
+        }
+      } catch (error) {
+        const message = `❌ テスト失敗\n\nエラー: ${error.message}`;
+        showResult('test3-result', message, 'error');
+        updateStatus('test3', 'failed');
+      }
+    }
+
+    // テスト4 ステップ1: 設定を保存してリロード
+    function runTest4Step1() {
+      updateStatus('test4', 'running');
+      
+      try {
+        // テスト用の設定を保存
+        const testSettings = {
+          pageSize: 'Legal',
+          orientation: 'landscape',
+          margins: {
+            top: '1.5cm',
+            right: '1.5cm',
+            bottom: '1.5cm',
+            left: '1.5cm'
+          },
+          scale: 0.85,
+          printBackground: false
+        };
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(testSettings));
+        localStorage.setItem('test4-expected', JSON.stringify(testSettings));
+        
+        const message = `⚠️ ステップ1完了\n\n以下の設定を保存しました:\n${JSON.stringify(testSettings, null, 2)}\n\nページをリロードしてください。\nリロード後、「ステップ2: リロード後の確認」ボタンをクリックしてください。`;
+        showResult('test4-result', message, 'warning');
+        
+        // 3秒後に自動リロード
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
+      } catch (error) {
+        const message = `❌ テスト失敗\n\nエラー: ${error.message}`;
+        showResult('test4-result', message, 'error');
+        updateStatus('test4', 'failed');
+      }
+    }
+
+    // テスト4 ステップ2: リロード後の確認
+    function runTest4Step2() {
+      updateStatus('test4', 'running');
+      
+      try {
+        // 期待される設定を取得
+        const expectedStr = localStorage.getItem('test4-expected');
+        if (!expectedStr) {
+          throw new Error('期待される設定が見つかりません。先にステップ1を実行してください。');
+        }
+        
+        const expected = JSON.parse(expectedStr);
+        
+        // 現在の設定を取得
+        const currentStr = localStorage.getItem(STORAGE_KEY);
+        if (!currentStr) {
+          throw new Error('設定が保存されていません');
+        }
+        
+        const current = JSON.parse(currentStr);
+        
+        // 比較
+        if (deepEqual(current, expected)) {
+          const message = `✅ テスト成功\n\nページリロード後も設定が正しく保持されています！\n\n保持された設定:\n${JSON.stringify(current, null, 2)}`;
+          showResult('test4-result', message, 'success');
+          updateStatus('test4', 'passed');
+          
+          // テスト用データをクリア
+          localStorage.removeItem('test4-expected');
+        } else {
+          throw new Error('設定が期待値と一致しません');
+        }
+      } catch (error) {
+        const message = `❌ テスト失敗\n\nエラー: ${error.message}`;
+        showResult('test4-result', message, 'error');
+        updateStatus('test4', 'failed');
+      }
+    }
+
+    // メインアプリを開く
+    function openMainApp() {
+      window.open('index.html', '_blank');
+      const message = `ℹ️ メインアプリを新しいタブで開きました。\n\n以下の手順でテストしてください:\n1. 設定パネルを開く\n2. 各設定を変更（例: ページサイズをLetter、向きを横向きに変更）\n3. ページをリロード（F5キー）\n4. 設定が保持されていることを確認`;
+      showResult('test5-result', message, 'info');
+    }
+
+    // メインアプリの設定を確認
+    function checkMainAppSettings() {
+      updateStatus('test5', 'running');
+      
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        
+        if (!saved) {
+          const message = `ℹ️ 設定が保存されていません\n\nデフォルト設定が使用されます。\nメインアプリで設定を変更してから、このボタンをクリックしてください。`;
+          showResult('test5-result', message, 'info');
+          updateStatus('test5', 'pending');
+          return;
+        }
+        
+        const settings = JSON.parse(saved);
+        const isDefault = deepEqual(settings, DEFAULT_SETTINGS);
+        
+        if (isDefault) {
+          const message = `ℹ️ デフォルト設定が保存されています\n\n${JSON.stringify(settings, null, 2)}\n\nメインアプリで設定を変更してから、再度確認してください。`;
+          showResult('test5-result', message, 'info');
+          updateStatus('test5', 'pending');
+        } else {
+          const message = `✅ カスタム設定が保存されています\n\n${JSON.stringify(settings, null, 2)}\n\nメインアプリで設定を変更し、ページをリロードして設定が保持されることを確認してください。`;
+          showResult('test5-result', message, 'success');
+          updateStatus('test5', 'passed');
+        }
+      } catch (error) {
+        const message = `❌ エラー\n\n${error.message}`;
+        showResult('test5-result', message, 'error');
+        updateStatus('test5', 'failed');
+      }
+    }
+
+    // ページ読み込み時に現在の設定を表示
+    window.addEventListener('DOMContentLoaded', () => {
+      displayCurrentSettings();
+      
+      // テスト4のステップ2が実行待ちかチェック
+      if (localStorage.getItem('test4-expected')) {
+        const message = `⚠️ テスト4のステップ2を実行してください\n\nページがリロードされました。\n「ステップ2: リロード後の確認」ボタンをクリックして、設定が保持されているか確認してください。`;
+        showResult('test4-result', message, 'warning');
+        updateStatus('test4', 'running');
+      }
+    });
+  </script>
+</body>
+</html>

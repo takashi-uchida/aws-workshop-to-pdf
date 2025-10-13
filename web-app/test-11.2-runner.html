@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>タスク11.2 テストランナー - 単一URL変換</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2563eb;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #64748b;
+            margin-bottom: 30px;
+        }
+
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .test-section h2 {
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .test-case {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-left: 4px solid #2563eb;
+        }
+
+        .test-case h3 {
+            color: #334155;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .test-input {
+            margin: 10px 0;
+        }
+
+        .test-input label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .test-input input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .test-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        .test-button:hover {
+            background: #1d4ed8;
+        }
+
+        .test-button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .expected {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            font-size: 14px;
+        }
+
+        .expected strong {
+            color: #92400e;
+        }
+
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .result.success {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            color: #065f46;
+        }
+
+        .result.error {
+            background: #fee2e2;
+            border-left: 4px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .result.info {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            color: #1e40af;
+        }
+
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 8px;
+            margin-bottom: 5px;
+            background: #f8fafc;
+            border-radius: 4px;
+        }
+
+        .checklist input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-badge.pending {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .status-badge.pass {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.fail {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .app-link {
+            display: inline-block;
+            margin: 20px 0;
+            padding: 15px 25px;
+            background: #10b981;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .app-link:hover {
+            background: #059669;
+        }
+
+        .instructions {
+            background: #eff6ff;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .instructions h3 {
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+        }
+
+        .instructions li {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>タスク11.2 テストランナー</h1>
+        <p class="subtitle">単一URL変換の動作確認</p>
+
+        <div class="instructions">
+            <h3>📋 テスト実行方法</h3>
+            <ol>
+                <li>下記の「アプリを開く」ボタンをクリックして、別タブでアプリを開きます</li>
+                <li>各テストケースの手順に従ってテストを実行します</li>
+                <li>期待される結果と実際の結果を比較します</li>
+                <li>チェックボックスにチェックを入れて進捗を記録します</li>
+            </ol>
+        </div>
+
+        <a href="index.html" target="_blank" class="app-link">🚀 アプリを開く（別タブ）</a>
+
+        <!-- テストケース1: 有効なURL -->
+        <div class="test-section">
+            <h2>テストケース1: 有効なURLでの変換テスト <span class="status-badge pending" id="status-1">未実施</span></h2>
+            
+            <div class="test-case">
+                <h3>目的</h3>
+                <p>有効なURLを入力した際に、正常に印刷ダイアログが表示されることを確認</p>
+
+                <div class="test-input">
+                    <label>テスト用URL（以下から選択またはカスタム入力）:</label>
+                    <select id="test-url-1" style="width: 100%; padding: 10px; margin-bottom: 10px;">
+                        <option value="https://example.com">https://example.com</option>
+                        <option value="https://www.google.com">https://www.google.com</option>
+                        <option value="https://github.com">https://github.com</option>
+                        <option value="custom">カスタムURL...</option>
+                    </select>
+                    <input type="url" id="custom-url-1" placeholder="カスタムURLを入力" style="display: none; width: 100%; padding: 10px;">
+                </div>
+
+                <div class="expected">
+                    <strong>期待される結果:</strong>
+                    <ul>
+                        <li>✅ 「変換中...」の進捗メッセージが表示される</li>
+                        <li>✅ 印刷ダイアログが表示される</li>
+                        <li>✅ 成功メッセージが表示される</li>
+                        <li>✅ トースト通知で成功メッセージが表示される</li>
+                    </ul>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <button class="test-button" onclick="copyToClipboard('test-url-1')">URLをコピー</button>
+                    <button class="test-button" onclick="markTestResult(1, 'pass')">✅ 成功</button>
+                    <button class="test-button" onclick="markTestResult(1, 'fail')">❌ 失敗</button>
+                </div>
+
+                <div id="result-1" class="result" style="display: none;"></div>
+            </div>
+
+            <div class="test-case">
+                <h3>チェックリスト</h3>
+                <ul class="checklist">
+                    <li><input type="checkbox"> アプリで「単一URL」タブが選択されている</li>
+                    <li><input type="checkbox"> URL入力フィールドにURLを入力</li>
+                    <li><input type="checkbox"> 「PDFに変換」ボタンをクリック</li>
+                    <li><input type="checkbox"> 「変換中...」メッセージが表示された</li>
+                    <li><input type="checkbox"> 印刷ダイアログが表示された</li>
+                    <li><input type="checkbox"> 成功メッセージが表示された</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- テストケース2: 無効なURL -->
+        <div class="test-section">
+            <h2>テストケース2: 無効なURLでのエラーハンドリング <span class="status-badge pending" id="status-2">未実施</span></h2>
+            
+            <div class="test-case">
+                <h3>2-1: 空のURL</h3>
+                <div class="test-input">
+                    <label>テスト用入力:</label>
+                    <input type="text" value="" readonly style="background: #f1f5f9;">
+                </div>
+                <div class="expected">
+                    <strong>期待される結果:</strong>
+                    <ul>
+                        <li>✅ 「PDFに変換」ボタンが無効化される</li>
+                        <li>✅ エラーメッセージは表示されない</li>
+                    </ul>
+                </div>
+                <ul class="checklist">
+                    <li><input type="checkbox"> URL入力フィールドを空にする</li>
+                    <li><input type="checkbox"> 「PDFに変換」ボタンが無効化されている</li>
+                    <li><input type="checkbox"> エラーメッセージが表示されない</li>
+                </ul>
+            </div>
+
+            <div class="test-case">
+                <h3>2-2: 不正な形式のURL</h3>
+                <div class="test-input">
+                    <label>テスト用入力:</label>
+                    <input type="text" id="test-url-2-2" value="not-a-url" readonly style="background: #f1f5f9;">
+                </div>
+                <div class="expected">
+                    <strong>期待される結果:</strong>
+                    <ul>
+                        <li>✅ インラインエラーメッセージ「無効なURLです。正しい形式で入力してください。」が表示される</li>
+                        <li>✅ 「PDFに変換」ボタンが無効化される</li>
+                    </ul>
+                </div>
+                <button class="test-button" onclick="copyToClipboard('test-url-2-2')">テキストをコピー</button>
+                <ul class="checklist">
+                    <li><input type="checkbox"> URL入力フィールドに「not-a-url」を入力</li>
+                    <li><input type="checkbox"> インラインエラーメッセージが表示された</li>
+                    <li><input type="checkbox"> 「PDFに変換」ボタンが無効化されている</li>
+                </ul>
+            </div>
+
+            <div class="test-case">
+                <h3>2-3: プロトコルなしのURL</h3>
+                <div class="test-input">
+                    <label>テスト用入力:</label>
+                    <input type="text" id="test-url-2-3" value="example.com" readonly style="background: #f1f5f9;">
+                </div>
+                <div class="expected">
+                    <strong>期待される結果:</strong>
+                    <ul>
+                        <li>✅ インラインエラーメッセージが表示される</li>
+                        <li>✅ 「PDFに変換」ボタンが無効化される</li>
+                    </ul>
+                </div>
+                <button class="test-button" onclick="copyToClipboard('test-url-2-3')">テキストをコピー</button>
+                <ul class="checklist">
+                    <li><input type="checkbox"> URL入力フィールドに「example.com」を入力</li>
+                    <li><input type="checkbox"> インラインエラーメッセージが表示された</li>
+                    <li><input type="checkbox"> 「PDFに変換」ボタンが無効化されている</li>
+                </ul>
+            </div>
+
+            <div class="test-case">
+                <h3>2-4: 無効なプロトコル</h3>
+                <div class="test-input">
+                    <label>テスト用入力:</label>
+                    <input type="text" id="test-url-2-4" value="ftp://example.com" readonly style="background: #f1f5f9;">
+                </div>
+                <div class="expected">
+                    <strong>期待される結果:</strong>
+                    <ul>
+                        <li>✅ インラインエラーメッセージが表示される</li>
+                        <li>✅ 「PDFに変換」ボタンが無効化される</li>
+                    </ul>
+                </div>
+                <button class="test-button" onclick="copyToClipboard('test-url-2-4')">テキストをコピー</button>
+                <ul class="checklist">
+                    <li><input type="checkbox"> URL入力フィールドに「ftp://example.com」を入力</li>
+                    <li><input type="checkbox"> インラインエラーメッセージが表示された</li>
+                    <li><input type="checkbox"> 「PDFに変換」ボタンが無効化されている</li>
+                </ul>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <button class="test-button" onclick="markTestResult(2, 'pass')">✅ すべて成功</button>
+                <button class="test-button" onclick="markTestResult(2, 'fail')">❌ 一部失敗</button>
+            </div>
+            <div id="result-2" class="result" style="display: none;"></div>
+        </div>
+
+        <!-- テストケース3: 印刷ダイアログ -->
+        <div class="test-section">
+            <h2>テストケース3: 印刷ダイアログの表示確認 <span class="status-badge pending" id="status-3">未実施</span></h2>
+            
+            <div class="test-case">
+                <h3>手順</h3>
+                <ol>
+                    <li>アプリで「PDF設定」セクションを展開</li>
+                    <li>設定を確認（ページサイズ: A4、向き: 縦向き、余白: 1cm、背景印刷: チェック）</li>
+                    <li>有効なURL（例: https://example.com）を入力</li>
+                    <li>「PDFに変換」ボタンをクリック</li>
+                    <li>印刷ダイアログが表示されることを確認</li>
+                    <li>印刷ダイアログで「送信先」を「PDFに保存」に設定</li>
+                    <li>PDFとして保存できることを確認</li>
+                </ol>
+
+                <div class="expected">
+                    <strong>期待される結果:</strong>
+                    <ul>
+                        <li>✅ 印刷ダイアログが表示される</li>
+                        <li>✅ ページが正しく読み込まれている</li>
+                        <li>✅ 印刷プレビューが表示される</li>
+                        <li>✅ PDFとして保存できる</li>
+                    </ul>
+                </div>
+
+                <ul class="checklist">
+                    <li><input type="checkbox"> PDF設定セクションを展開した</li>
+                    <li><input type="checkbox"> 設定を確認した</li>
+                    <li><input type="checkbox"> 有効なURLを入力した</li>
+                    <li><input type="checkbox"> 印刷ダイアログが表示された</li>
+                    <li><input type="checkbox"> 印刷プレビューが表示された</li>
+                    <li><input type="checkbox"> PDFとして保存できた</li>
+                </ul>
+
+                <div style="margin-top: 15px;">
+                    <button class="test-button" onclick="markTestResult(3, 'pass')">✅ 成功</button>
+                    <button class="test-button" onclick="markTestResult(3, 'fail')">❌ 失敗</button>
+                </div>
+                <div id="result-3" class="result" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- テスト結果サマリー -->
+        <div class="test-section">
+            <h2>📊 テスト結果サマリー</h2>
+            <div id="summary">
+                <p>テストを実行して結果を記録してください。</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // URLセレクトの変更処理
+        document.getElementById('test-url-1').addEventListener('change', function() {
+            const customInput = document.getElementById('custom-url-1');
+            if (this.value === 'custom') {
+                customInput.style.display = 'block';
+            } else {
+                customInput.style.display = 'none';
+            }
+        });
+
+        // URLをクリップボードにコピー
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            let text = element.value;
+            
+            if (element.tagName === 'SELECT') {
+                if (element.value === 'custom') {
+                    text = document.getElementById('custom-url-1').value;
+                } else {
+                    text = element.value;
+                }
+            }
+            
+            navigator.clipboard.writeText(text).then(() => {
+                alert('クリップボードにコピーしました: ' + text);
+            }).catch(err => {
+                console.error('コピーに失敗しました:', err);
+            });
+        }
+
+        // テスト結果をマーク
+        function markTestResult(testNumber, result) {
+            const statusBadge = document.getElementById(`status-${testNumber}`);
+            const resultDiv = document.getElementById(`result-${testNumber}`);
+            
+            if (result === 'pass') {
+                statusBadge.textContent = '✅ 成功';
+                statusBadge.className = 'status-badge pass';
+                resultDiv.textContent = 'テストケース' + testNumber + 'は成功しました。';
+                resultDiv.className = 'result success';
+            } else {
+                statusBadge.textContent = '❌ 失敗';
+                statusBadge.className = 'status-badge fail';
+                resultDiv.textContent = 'テストケース' + testNumber + 'は失敗しました。詳細を記録してください。';
+                resultDiv.className = 'result error';
+            }
+            
+            resultDiv.style.display = 'block';
+            updateSummary();
+        }
+
+        // サマリーを更新
+        function updateSummary() {
+            const badges = document.querySelectorAll('.status-badge');
+            let passed = 0;
+            let failed = 0;
+            let pending = 0;
+            
+            badges.forEach(badge => {
+                if (badge.classList.contains('pass')) {
+                    passed++;
+                } else if (badge.classList.contains('fail')) {
+                    failed++;
+                } else {
+                    pending++;
+                }
+            });
+            
+            const total = badges.length;
+            const summaryDiv = document.getElementById('summary');
+            
+            summaryDiv.innerHTML = `
+                <p><strong>実行済み:</strong> ${passed + failed} / ${total}</p>
+                <p><strong>成功:</strong> ${passed}</p>
+                <p><strong>失敗:</strong> ${failed}</p>
+                <p><strong>未実施:</strong> ${pending}</p>
+                ${passed + failed === total ? '<p style="color: #10b981; font-weight: bold; margin-top: 10px;">✅ すべてのテストが完了しました！</p>' : ''}
+            `;
+        }
+
+        // 初期サマリー表示
+        updateSummary();
+    </script>
+</body>
+</html>

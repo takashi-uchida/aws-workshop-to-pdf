@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>単一URL変換 - 自動テスト</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #2563eb;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-case {
+            margin: 15px 0;
+            padding: 15px;
+            border-left: 4px solid #e5e7eb;
+        }
+        .test-case.pass {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+        .test-case.fail {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+        .test-case.running {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+        .test-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9fafb;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .summary {
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .summary h2 {
+            margin-top: 0;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        .status.pass {
+            background: #10b981;
+            color: white;
+        }
+        .status.fail {
+            background: #ef4444;
+            color: white;
+        }
+        .status.running {
+            background: #f59e0b;
+            color: white;
+        }
+        .status.pending {
+            background: #6b7280;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 単一URL変換 - 自動テスト</h1>
+    
+    <div class="test-section">
+        <h2>テスト制御</h2>
+        <button id="run-all-btn" onclick="runAllTests()">すべてのテストを実行</button>
+        <button id="clear-btn" onclick="clearResults()">結果をクリア</button>
+    </div>
+
+    <div class="summary" id="summary">
+        <h2>テスト結果サマリー</h2>
+        <p>合格: <span id="pass-count">0</span> / 不合格: <span id="fail-count">0</span> / 実行中: <span id="running-count">0</span> / 未実行: <span id="pending-count">9</span></p>
+        <p>成功率: <span id="success-rate">0</span>%</p>
+    </div>
+
+    <div class="test-section">
+        <h2>テストケース</h2>
+        
+        <div class="test-case pending" id="test-1">
+            <div class="test-title">
+                <span class="status pending">未実行</span>
+                テスト1: Utils.isValidURL() - 有効なURL
+            </div>
+            <div class="test-result" id="result-1"></div>
+        </div>
+
+        <div class="test-case pending" id="test-2">
+            <div class="test-title">
+                <span class="status pending">未実行</span>
+                テスト2: Utils.isValidURL() - 無効なURL
+            </div>
+            <div class="test-result" id="result-2"></div>
+        </div>
+
+        <div class="test-case pending" id="test-3">
+            <div class="test-title">
+                <span class="status pending">未実行</span>
+                テスト3: Utils.isValidURL() - 空のURL
+            </div>
+            <div class="test-result" id="result-3"></div>
+        </div>
+
+        <div class="test-case pending" id="test-4">
+            <div class="test-title">
+                <span class="status pending">未実行</span>
+                テスト4: Utils.getErrorMessage() - エラータイプ
+            </div>
+            <div class="test-result" id="result-4"></div>
+        </div>
+
+        <div class="test-case pending" id="test-5">
+            <div class="test-title">
+                <span class="status pending">未実行</span>
+                テスト5: Utils.validateSettings() - 有効な設定
+            </div>
+            <div class="test-result" id="result-5"></div>
+        </div>
+
+        <div class="test-case pending" id="test-6">
+            <div class="test-title">
+                <span class="status pending">未実行</span>
+                テスト6: Utils.checkBrowserCompatibility()
+            </div>
+            <div class="test-result" id="result-6"></div>
+        </div>
+
+        <div class="test-case pending" id="test-7">
+            <div class="test-title">
+                <span class="status pending">未実行</span>
+                テスト7: PDFConverter インスタンス化
+            </div>
+            <div class="test-result" id="result-7"></div>
+        </div>
+
+        <div class="test-case pending" id="test-8">
+            <div class="test-title">
+                <span class="status pending">未実行</span>
+                テスト8: App インスタンス化
+            </div>
+            <div class="test-result" id="result-8"></div>
+        </div>
+
+        <div class="test-case pending" id="test-9">
+            <div class="test-title">
+                <span class="status pending">未実行</span>
+                テスト9: App.loadSettings() - デフォルト設定
+            </div>
+            <div class="test-result" id="result-9"></div>
+        </div>
+    </div>
+
+    <!-- 必要なスクリプトを読み込み -->
+    <script src="js/utils.js"></script>
+    <script src="js/converter.js"></script>
+    <script src="js/batch.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        let testResults = {
+            pass: 0,
+            fail: 0,
+            running: 0,
+            pending: 9
+        };
+
+        function updateSummary() {
+            document.getElementById('pass-count').textContent = testResults.pass;
+            document.getElementById('fail-count').textContent = testResults.fail;
+            document.getElementById('running-count').textContent = testResults.running;
+            document.getElementById('pending-count').textContent = testResults.pending;
+            
+            const total = testResults.pass + testResults.fail;
+            const successRate = total > 0 ? Math.round((testResults.pass / total) * 100) : 0;
+            document.getElementById('success-rate').textContent = successRate;
+        }
+
+        function setTestStatus(testId, status, message = '') {
+            const testCase = document.getElementById(`test-${testId}`);
+            const resultDiv = document.getElementById(`result-${testId}`);
+            const statusSpan = testCase.querySelector('.status');
+            
+            // 前の状態をカウントから減算
+            const prevStatus = testCase.className.split(' ')[1];
+            if (prevStatus && testResults[prevStatus] !== undefined) {
+                testResults[prevStatus]--;
+            }
+            
+            // 新しい状態を設定
+            testCase.className = `test-case ${status}`;
+            statusSpan.className = `status ${status}`;
+            
+            const statusText = {
+                pass: '✅ 合格',
+                fail: '❌ 不合格',
+                running: '⏳ 実行中',
+                pending: '未実行'
+            };
+            
+            statusSpan.textContent = statusText[status] || status;
+            resultDiv.textContent = message;
+            
+            // 新しい状態をカウントに追加
+            if (testResults[status] !== undefined) {
+                testResults[status]++;
+            }
+            
+            updateSummary();
+        }
+
+        async function runTest(testId, testFn) {
+            setTestStatus(testId, 'running', 'テスト実行中...');
+            
+            try {
+                const result = await testFn();
+                if (result.pass) {
+                    setTestStatus(testId, 'pass', result.message);
+                } else {
+                    setTestStatus(testId, 'fail', result.message);
+                }
+            } catch (error) {
+                setTestStatus(testId, 'fail', `エラー: ${error.message}`);
+            }
+        }
+
+        // テスト1: 有効なURL
+        async function test1() {
+            const validUrls = [
+                'https://example.com',
+                'http://example.com',
+                'https://www.example.com/path',
+                'https://example.com:8080/path?query=value'
+            ];
+            
+            const results = validUrls.map(url => ({
+                url,
+                valid: Utils.isValidURL(url)
+            }));
+            
+            const allPass = results.every(r => r.valid);
+            
+            return {
+                pass: allPass,
+                message: allPass 
+                    ? `すべての有効なURLが正しく検証されました\n${results.map(r => `✓ ${r.url}`).join('\n')}`
+                    : `一部のURLの検証に失敗しました\n${results.map(r => `${r.valid ? '✓' : '✗'} ${r.url}`).join('\n')}`
+            };
+        }
+
+        // テスト2: 無効なURL
+        async function test2() {
+            const invalidUrls = [
+                'not-a-url',
+                'ftp://example.com',
+                'javascript:alert(1)',
+                '',
+                null,
+                undefined
+            ];
+            
+            const results = invalidUrls.map(url => ({
+                url: url === null ? 'null' : url === undefined ? 'undefined' : url,
+                valid: Utils.isValidURL(url)
+            }));
+            
+            const allPass = results.every(r => !r.valid);
+            
+            return {
+                pass: allPass,
+                message: allPass 
+                    ? `すべての無効なURLが正しく拒否されました\n${results.map(r => `✓ ${r.url}`).join('\n')}`
+                    : `一部のURLの検証に失敗しました\n${results.map(r => `${!r.valid ? '✓' : '✗'} ${r.url}`).join('\n')}`
+            };
+        }
+
+        // テスト3: 空のURL
+        async function test3() {
+            const emptyUrls = ['', '   ', '\n', '\t'];
+            
+            const results = emptyUrls.map(url => ({
+                url: url === '' ? '(空文字列)' : `(空白: "${url}")`,
+                valid: Utils.isValidURL(url)
+            }));
+            
+            const allPass = results.every(r => !r.valid);
+            
+            return {
+                pass: allPass,
+                message: allPass 
+                    ? `すべての空のURLが正しく拒否されました`
+                    : `一部の空のURLの検証に失敗しました`
+            };
+        }
+
+        // テスト4: エラーメッセージ
+        async function test4() {
+            const errorTypes = [
+                { type: 'invalid_url', expected: '無効なURL' },
+                { type: 'timeout', expected: 'タイムアウト' },
+                { type: 'cors', expected: 'CORS' },
+                { type: 'network', expected: 'ネットワーク' }
+            ];
+            
+            const results = errorTypes.map(({ type, expected }) => {
+                const message = Utils.getErrorMessage(type);
+                const contains = message.includes(expected);
+                return {
+                    type,
+                    contains,
+                    message: message.substring(0, 50) + '...'
+                };
+            });
+            
+            const allPass = results.every(r => r.contains);
+            
+            return {
+                pass: allPass,
+                message: allPass 
+                    ? `すべてのエラーメッセージが正しく生成されました\n${results.map(r => `✓ ${r.type}: ${r.message}`).join('\n')}`
+                    : `一部のエラーメッセージの生成に失敗しました\n${results.map(r => `${r.contains ? '✓' : '✗'} ${r.type}`).join('\n')}`
+            };
+        }
+
+        // テスト5: 設定のバリデーション
+        async function test5() {
+            const validSettings = {
+                pageSize: 'A4',
+                orientation: 'portrait',
+                margins: {
+                    top: '1cm',
+                    right: '1cm',
+                    bottom: '1cm',
+                    left: '1cm'
+                },
+                scale: 1.0,
+                printBackground: true
+            };
+            
+            const validation = Utils.validateSettings(validSettings);
+            
+            return {
+                pass: validation.valid,
+                message: validation.valid 
+                    ? `有効な設定が正しく検証されました`
+                    : `設定の検証に失敗しました: ${validation.errors.join(', ')}`
+            };
+        }
+
+        // テスト6: ブラウザ互換性チェック
+        async function test6() {
+            const compatibility = Utils.checkBrowserCompatibility();
+            
+            return {
+                pass: compatibility.compatible,
+                message: compatibility.compatible 
+                    ? `ブラウザは互換性があります\n警告: ${compatibility.warnings.length}件`
+                    : `ブラウザに非対応機能があります: ${compatibility.unsupportedFeatures.join(', ')}`
+            };
+        }
+
+        // テスト7: PDFConverter インスタンス化
+        async function test7() {
+            try {
+                const converter = new PDFConverter();
+                const hasRequiredMethods = 
+                    typeof converter.convertToPDF === 'function' &&
+                    typeof converter.createIframe === 'function' &&
+                    typeof converter.waitForLoad === 'function' &&
+                    typeof converter.triggerPrint === 'function' &&
+                    typeof converter.cleanup === 'function';
+                
+                return {
+                    pass: hasRequiredMethods,
+                    message: hasRequiredMethods 
+                        ? `PDFConverterが正しくインスタンス化されました\nすべての必須メソッドが存在します`
+                        : `PDFConverterに必須メソッドが不足しています`
+                };
+            } catch (error) {
+                return {
+                    pass: false,
+                    message: `インスタンス化に失敗: ${error.message}`
+                };
+            }
+        }
+
+        // テスト8: App インスタンス化
+        async function test8() {
+            try {
+                const app = new App();
+                const hasRequiredMethods = 
+                    typeof app.init === 'function' &&
+                    typeof app.handleSingleConversion === 'function' &&
+                    typeof app.handleBatchConversion === 'function' &&
+                    typeof app.loadSettings === 'function' &&
+                    typeof app.saveSettings === 'function';
+                
+                const hasRequiredProperties =
+                    app.converter instanceof PDFConverter &&
+                    app.batchProcessor instanceof BatchProcessor;
+                
+                return {
+                    pass: hasRequiredMethods && hasRequiredProperties,
+                    message: (hasRequiredMethods && hasRequiredProperties)
+                        ? `Appが正しくインスタンス化されました\nすべての必須メソッドとプロパティが存在します`
+                        : `Appに必須メソッドまたはプロパティが不足しています`
+                };
+            } catch (error) {
+                return {
+                    pass: false,
+                    message: `インスタンス化に失敗: ${error.message}`
+                };
+            }
+        }
+
+        // テスト9: デフォルト設定の読み込み
+        async function test9() {
+            try {
+                // localStorageをクリア
+                localStorage.removeItem('pdfConverterSettings');
+                
+                const app = new App();
+                const settings = app.loadSettings();
+                
+                const hasRequiredSettings =
+                    settings.pageSize === 'A4' &&
+                    settings.orientation === 'portrait' &&
+                    settings.margins &&
+                    settings.margins.top === '1cm' &&
+                    settings.printBackground === true;
+                
+                return {
+                    pass: hasRequiredSettings,
+                    message: hasRequiredSettings 
+                        ? `デフォルト設定が正しく読み込まれました\n${JSON.stringify(settings, null, 2)}`
+                        : `デフォルト設定が正しくありません\n${JSON.stringify(settings, null, 2)}`
+                };
+            } catch (error) {
+                return {
+                    pass: false,
+                    message: `設定の読み込みに失敗: ${error.message}`
+                };
+            }
+        }
+
+        async function runAllTests() {
+            document.getElementById('run-all-btn').disabled = true;
+            
+            await runTest(1, test1);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await runTest(2, test2);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await runTest(3, test3);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await runTest(4, test4);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await runTest(5, test5);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await runTest(6, test6);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await runTest(7, test7);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await runTest(8, test8);
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await runTest(9, test9);
+            
+            document.getElementById('run-all-btn').disabled = false;
+        }
+
+        function clearResults() {
+            for (let i = 1; i <= 9; i++) {
+                setTestStatus(i, 'pending', '');
+            }
+            testResults = { pass: 0, fail: 0, running: 0, pending: 9 };
+            updateSummary();
+        }
+
+        // 初期化
+        updateSummary();
+    </script>
+</body>
+</html>

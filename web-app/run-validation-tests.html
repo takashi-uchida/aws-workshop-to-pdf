@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自動検証テスト - タスク11.2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #4ec9b0;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #252526;
+            border-radius: 4px;
+        }
+
+        button {
+            background: #0e639c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background: #1177bb;
+        }
+
+        button:disabled {
+            background: #3e3e42;
+            cursor: not-allowed;
+        }
+
+        #console {
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 15px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .log-line {
+            margin-bottom: 5px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .log-success {
+            color: #4ec9b0;
+        }
+
+        .log-error {
+            color: #f48771;
+        }
+
+        .log-warning {
+            color: #dcdcaa;
+        }
+
+        .log-info {
+            color: #9cdcfe;
+        }
+
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background: #252526;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .summary.show {
+            display: block;
+        }
+
+        .summary h2 {
+            color: #4ec9b0;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .stat {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .stat-label {
+            color: #9cdcfe;
+            font-weight: bold;
+        }
+
+        .stat-value {
+            color: #d4d4d4;
+        }
+
+        .progress {
+            margin: 10px 0;
+            height: 20px;
+            background: #3e3e42;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #0e639c, #1177bb);
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .status.running {
+            background: #dcdcaa;
+            color: #1e1e1e;
+        }
+
+        .status.success {
+            background: #4ec9b0;
+            color: #1e1e1e;
+        }
+
+        .status.failed {
+            background: #f48771;
+            color: #1e1e1e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 タスク11.2 自動検証テスト</h1>
+        
+        <div class="controls">
+            <button id="run-btn" onclick="runTests()">▶️ テストを実行</button>
+            <button id="clear-btn" onclick="clearConsole()">🗑️ コンソールをクリア</button>
+            <button onclick="window.location.href='index.html'">🏠 アプリに戻る</button>
+            <span id="status"></span>
+        </div>
+
+        <div id="console"></div>
+
+        <div id="summary" class="summary">
+            <h2>📊 テスト結果サマリー</h2>
+            <div class="stat">
+                <span class="stat-label">総テスト数:</span>
+                <span class="stat-value" id="total-tests">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">✅ 成功:</span>
+                <span class="stat-value" id="passed-tests">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">❌ 失敗:</span>
+                <span class="stat-value" id="failed-tests">0</span>
+            </div>
+            <div class="stat">
+                <span class="stat-label">成功率:</span>
+                <span class="stat-value" id="success-rate">0%</span>
+            </div>
+            <div class="progress">
+                <div class="progress-bar" id="progress-bar">0%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 依存スクリプトを読み込み -->
+    <script src="js/utils.js"></script>
+    <script src="test-validation.js"></script>
+
+    <script>
+        const consoleDiv = document.getElementById('console');
+        const summaryDiv = document.getElementById('summary');
+        const statusSpan = document.getElementById('status');
+        const runBtn = document.getElementById('run-btn');
+
+        // コンソール出力をオーバーライド
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+
+        function addLogLine(message, type = 'info') {
+            const line = document.createElement('div');
+            line.className = `log-line log-${type}`;
+            line.textContent = message;
+            consoleDiv.appendChild(line);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const message = args.join(' ');
+            
+            let type = 'info';
+            if (message.includes('✅')) {
+                type = 'success';
+            } else if (message.includes('❌')) {
+                type = 'error';
+            } else if (message.includes('⚠️')) {
+                type = 'warning';
+            }
+            
+            addLogLine(message, type);
+        };
+
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            addLogLine(args.join(' '), 'error');
+        };
+
+        console.warn = function(...args) {
+            originalWarn.apply(console, args);
+            addLogLine(args.join(' '), 'warning');
+        };
+
+        // テストを実行
+        async function runTests() {
+            // UIをリセット
+            clearConsole();
+            summaryDiv.classList.remove('show');
+            
+            // ステータスを更新
+            statusSpan.innerHTML = '<span class="status running">実行中...</span>';
+            runBtn.disabled = true;
+
+            try {
+                // テストを実行
+                const results = runValidationTests();
+
+                // サマリーを表示
+                document.getElementById('total-tests').textContent = results.total;
+                document.getElementById('passed-tests').textContent = results.passed;
+                document.getElementById('failed-tests').textContent = results.failed;
+                
+                const successRate = ((results.passed / results.total) * 100).toFixed(1);
+                document.getElementById('success-rate').textContent = successRate + '%';
+                
+                const progressBar = document.getElementById('progress-bar');
+                progressBar.style.width = successRate + '%';
+                progressBar.textContent = successRate + '%';
+
+                summaryDiv.classList.add('show');
+
+                // ステータスを更新
+                if (results.failed === 0) {
+                    statusSpan.innerHTML = '<span class="status success">✅ すべて成功</span>';
+                } else {
+                    statusSpan.innerHTML = '<span class="status failed">❌ 一部失敗</span>';
+                }
+            } catch (error) {
+                console.error('テスト実行中にエラーが発生しました:', error);
+                statusSpan.innerHTML = '<span class="status failed">❌ エラー</span>';
+            } finally {
+                runBtn.disabled = false;
+            }
+        }
+
+        // コンソールをクリア
+        function clearConsole() {
+            consoleDiv.innerHTML = '';
+        }
+
+        // 初期メッセージ
+        addLogLine('✅ 検証テストが読み込まれました。', 'success');
+        addLogLine('「テストを実行」ボタンをクリックしてテストを開始してください。', 'info');
+    </script>
+</body>
+</html>
