@@ -1,0 +1,24 @@
+{
+  "name": "aws-workshop-to-pdf",
+  "version": "2.0.0",
+  "description": "汎用的なWebページPDF変換ツール",
+  "main": "cli.js",
+  "bin": {
+    "web2pdf": "./cli.js"
+  },
+  "scripts": {
+    "convert": "node cli.js",
+    "convert-single": "node cli.js -m single",
+    "convert-multi": "node cli.js -m multi",
+    "convert-batch": "node cli.js --url-file urls.txt",
+    "convert-workshop": "node cli.js -u https://catalog.workshops.aws/saas-operations/en-US -m multi -s 'nav a[href^=\"/\"]' -w 5000",
+    "legacy-single": "node index.js",
+    "legacy-multi": "node convert-all-pages.js",
+    "install": "npx playwright install chromium"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0",
+    "pdf-lib": "^1.17.1",
+    "commander": "^11.1.0"
+  }
+}
