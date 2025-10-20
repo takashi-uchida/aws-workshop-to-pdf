@@ -29,5 +29,15 @@ yarn-error.log*
 *.swo
 *~
 
-# Web app - Keep all files for GitHub Pages deployment
-# (No exclusions needed for web-app/ directory)
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+
+# Functions
+functions/node_modules/
+functions/lib/
+
+# Web app - Keep all files for deployment
+# (No exclusions needed for public/ directory)

@@ -1,0 +1,16 @@
+{
+  "description": "Auto-approve common commands",
+  "toolsSettings": {
+    "execute_bash": {
+      "autoAllowReadonly": true,
+      "allowedCommands": [
+        "firebase deploy.*",
+        "npm install.*",
+        "cd .*",
+        "ls.*",
+        "cat.*",
+        "grep.*"
+      ]
+    }
+  }
+}

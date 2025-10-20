@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="WebページをPDFに変換するツール">
+  <title>Web to PDF Converter</title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- ヘッダー -->
+    <header class="header">
+      <h1>Web to PDF Converter</h1>
+      <p class="subtitle">WebページをPDFに変換</p>
+    </header>
+
+    <!-- モード切り替えタブ -->
+    <div class="tabs">
+      <button class="tab active" data-tab="single">単一URL</button>
+      <button class="tab" data-tab="batch">バッチ変換</button>
+    </div>
+
+    <!-- 単一URL変換フォーム -->
+    <div class="tab-content active" id="single-tab">
+      <div class="form-group">
+        <label for="single-url">URL</label>
+        <input 
+          type="url" 
+          id="single-url" 
+          placeholder="https://example.com"
+          class="input-field"
+        >
+        <div class="error-message" id="single-error"></div>
+      </div>
+      <button class="btn btn-primary" id="convert-single">PDF に変換</button>
+    </div>
+
+    <!-- バッチ変換フォーム -->
+    <div class="tab-content" id="batch-tab">
+      <div class="form-group">
+        <label for="batch-urls">URL リスト（1行に1つ）</label>
+        <textarea 
+          id="batch-urls" 
+          rows="10"
+          placeholder="https://example1.com&#10;https://example2.com&#10;https://example3.com"
+          class="textarea-field"
+        ></textarea>
+        <div class="url-count" id="url-count">0 URLs</div>
+        <div class="error-message" id="batch-error"></div>
+      </div>
+      <button class="btn btn-primary" id="convert-batch">バッチ変換開始</button>
+    </div>
+
+    <!-- 設定パネル -->
+    <details class="settings-panel">
+      <summary>PDF設定</summary>
+      <div class="settings-content">
+        <div class="form-group">
+          <label for="page-size">ページサイズ</label>
+          <select id="page-size" class="select-field">
+            <option value="A4">A4</option>
+            <option value="Letter">Letter</option>
+            <option value="Legal">Legal</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" id="print-background" checked>
+            背景を印刷
+          </label>
+        </div>
+      </div>
+    </details>
+
+    <!-- 進捗表示エリア -->
+    <div class="progress-area" id="progress-area" style="display: none;">
+      <div class="loading-spinner"></div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="status-message" id="status-message">処理中...</div>
+    </div>
+
+    <!-- 結果表示エリア -->
+    <div class="results-area" id="results-area" style="display: none;">
+      <h3>変換結果</h3>
+      <div id="results-content"></div>
+    </div>
+
+    <!-- フッター -->
+    <footer class="footer">
+      <div class="footer-links">
+        <a href="#help" id="help-link">使い方</a>
+        <a href="https://github.com/your-repo" target="_blank">GitHub</a>
+      </div>
+    </footer>
+
+    <!-- ヘルプモーダル -->
+    <div class="modal" id="help-modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close" id="close-modal">&times;</span>
+        <h2>使い方</h2>
+        <div class="help-content">
+          <h3>単一URL変換</h3>
+          <p>1. URLを入力</p>
+          <p>2. 「PDFに変換」ボタンをクリック</p>
+          <p>3. PDFがダウンロードされます</p>
+          
+          <h3>バッチ変換</h3>
+          <p>1. 複数のURLを1行に1つずつ入力</p>
+          <p>2. 「バッチ変換開始」ボタンをクリック</p>
+          <p>3. 各PDFが順次ダウンロードされます</p>
+          
+          <h3>制限事項</h3>
+          <p>・処理時間: 最大60秒/URL</p>
+          <p>・PDFは24時間後に自動削除されます</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/utils.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
