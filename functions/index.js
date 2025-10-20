@@ -134,13 +134,14 @@ async function generatePdf(url, settings = {}) {
       await page.waitForTimeout(2000);
 
       const pdfBuffer = await page.pdf({
-        format: settings.pageSize || "A4",
+        format: "A3",
+        landscape: true,
         printBackground: settings.printBackground !== false,
-        margin: settings.margins || {
-          top: "20px",
-          right: "20px",
-          bottom: "20px",
-          left: "20px",
+        margin: {
+          top: "10px",
+          right: "10px",
+          bottom: "10px",
+          left: "10px",
         },
       });
 

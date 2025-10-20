@@ -8,7 +8,7 @@ class ApiClient {
   static FIREBASE_PROJECT_ID = 'aws-workshop-to-pdf';
   static LOCAL_HOST = 'localhost';
   static LOCAL_PORT = '5001';
-  static DEFAULT_TIMEOUT = 60000; // 60秒
+  static DEFAULT_TIMEOUT = 320000; // 320秒
   static MAX_RETRIES = 3;
   static RETRY_DELAY = 1000; // 1秒
 
