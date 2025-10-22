@@ -6,37 +6,6 @@ class App {
     this.apiClient = new ApiClient();
     this.settings = this.loadSettings();
     this.currentTab = 'single';
-    this.initCMP();
-  }
-
-  /**
-   * CMP初期化
-   */
-  initCMP() {
-    window.__tcfapi = window.__tcfapi || function() {
-      const queue = window.__tcfapi.queue = window.__tcfapi.queue || [];
-      queue.push(arguments);
-    };
-    
-    if (window.__tcfapi) {
-      window.__tcfapi('addEventListener', 2, (tcData, success) => {
-        if (success && tcData.eventStatus === 'useractioncomplete') {
-          this.handleConsentChange(tcData);
-        }
-      });
-    }
-  }
-
-  /**
-   * 同意変更ハンドラー
-   */
-  handleConsentChange(tcData) {
-    if (tcData.purpose.consents[1]) {
-      // 広告配信の同意あり
-      if (window.logEvent) {
-        window.logEvent(window.analytics, 'consent_granted');
-      }
-    }
   }
 
   /**
@@ -75,17 +44,7 @@ class App {
       helpLink: document.getElementById('help-link'),
       helpModal: document.getElementById('help-modal'),
       closeModal: document.getElementById('close-modal'),
-      
-      // 広告
-      adModal: document.getElementById('ad-modal'),
-      startConversion: document.getElementById('start-conversion'),
-      adContainer: document.getElementById('ad-container'),
-      adTimer: document.getElementById('ad-timer'),
     };
-    
-    this.pendingConversion = null;
-    this.adWatched = false;
-    this.adTimerInterval = null;
 
     // イベントリスナーの設定
     this.setupEventListeners();
@@ -142,74 +101,6 @@ class App {
         this.elements.helpModal.style.display = 'none';
       }
     });
-    
-    // 広告モーダル
-    this.elements.startConversion.addEventListener('click', () => {
-      if (this.adWatched) {
-        this.elements.adModal.style.display = 'none';
-        if (this.pendingConversion) {
-          this.pendingConversion();
-          this.pendingConversion = null;
-        }
-      }
-    });
-  }
-  
-  /**
-   * リワード広告を表示
-   */
-  showRewardAd() {
-    this.adWatched = false;
-    this.elements.startConversion.disabled = true;
-    this.elements.adModal.style.display = 'flex';
-    
-    // 広告をロード
-    this.loadRewardAd();
-  }
-  
-  /**
-   * リワード広告をロード
-   */
-  loadRewardAd() {
-    const adContainer = this.elements.adContainer;
-    adContainer.innerHTML = '<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-3586299042568120" data-ad-slot="4973039974" data-ad-format="auto" data-full-width-responsive="true"></ins>';
-    
-    try {
-      (adsbygoogle = window.adsbygoogle || []).push({});
-      if (window.logEvent) {
-        window.logEvent(window.analytics, 'ad_requested');
-      }
-    } catch (e) {
-      console.error('広告の読み込みに失敗:', e);
-    }
-    
-    // 30秒タイマーを開始
-    this.startAdTimer();
-  }
-  
-  /**
-   * 広告タイマーを開始
-   */
-  startAdTimer() {
-    let timeLeft = 30;
-    this.elements.adTimer.textContent = timeLeft;
-    
-    this.adTimerInterval = setInterval(() => {
-      timeLeft--;
-      this.elements.adTimer.textContent = timeLeft;
-      
-      if (timeLeft <= 0) {
-        clearInterval(this.adTimerInterval);
-        this.adWatched = true;
-        this.elements.startConversion.disabled = false;
-        this.elements.startConversion.innerHTML = '変換を開始';
-        
-        // Analytics
-        if (window.logEvent) {
-          window.logEvent(window.analytics, 'ad_watched');
-        }
-      }
-    }, 1000);
   }
 
   /**
@@ -259,9 +150,8 @@ class App {
 
     this.elements.singleError.textContent = '';
 
-    // リワード広告を表示
-    this.pendingConversion = () => this.executeSingleConversion(url);
-    this.showRewardAd();
+    // 変換を実行
+    await this.executeSingleConversion(url);
   }
   
   /**
@@ -325,9 +215,8 @@ class App {
 
     this.elements.batchError.textContent = '';
 
-    // リワード広告を表示
-    this.pendingConversion = () => this.executeBatchConversion(urls);
-    this.showRewardAd();
+    // バッチ変換を実行
+    await this.executeBatchConversion(urls);
   }
   
   /**
