@@ -52,21 +52,34 @@ exports.convertToPdf = onRequest(
 
         console.log(`PDF変換開始: ${url}`);
 
+        // ストリーミングレスポンスのヘッダー設定
+        res.setHeader("Content-Type", "text/event-stream");
+        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Connection", "keep-alive");
+
+        // 進捗コールバック
+        const onProgress = (progress) => {
+          res.write(`data: ${JSON.stringify(progress)}\n\n`);
+        };
+
         // PDF生成
-        const pdfBuffer = await generatePdf(url, settings);
+        const pdfBuffer = await generatePdf(url, settings, onProgress);
 
         // Firebase Storageにアップロード
+        onProgress({step: "uploading", percent: 95, message: "アップロード中..."});
         const fileName = `${uuidv4()}.pdf`;
         const downloadUrl = await uploadToStorage(pdfBuffer, fileName);
 
         console.log(`PDF変換完了: ${fileName}`);
 
-        // レスポンス
-        res.status(200).json({
+        // 完了レスポンス
+        res.write(`data: ${JSON.stringify({
+          step: "complete",
           success: true,
           downloadUrl,
           fileName,
-        });
+        })}\n\n`);
+        res.end();
       } catch (error) {
         console.error("PDF変換エラー:", error);
         res.status(500).json({
@@ -80,9 +93,10 @@ exports.convertToPdf = onRequest(
  * PuppeteerでPDFを生成
  * @param {string} url - 変換するURL
  * @param {object} settings - PDF設定
+ * @param {Function} onProgress - 進捗コールバック
  * @return {Buffer} PDFバッファ
  */
-async function generatePdf(url, settings = {}) {
+async function generatePdf(url, settings = {}, onProgress = () => {}) {
   let browser = null;
 
   try {
@@ -96,6 +110,8 @@ async function generatePdf(url, settings = {}) {
     const page = await browser.newPage();
     await page.setViewport({width: 1280, height: 720});
 
+    onProgress({step: "analyzing", percent: 10, message: "ページを解析中..."});
+
     // 全ページのリンクを取得
     const links = await getAllWorkshopLinks(page, url);
     const maxPages = 10;
@@ -105,7 +121,16 @@ async function generatePdf(url, settings = {}) {
     const pdfBuffers = [];
 
     // 各ページをPDF化
-    for (const link of pagesToConvert) {
+    for (let i = 0; i < pagesToConvert.length; i++) {
+      const link = pagesToConvert[i];
+      const percent = 10 + ((i + 1) / pagesToConvert.length) * 70;
+      onProgress({
+        step: "converting",
+        current: i + 1,
+        total: pagesToConvert.length,
+        percent: Math.round(percent),
+        message: `ページ ${i + 1}/${pagesToConvert.length} を変換中...`,
+      });
       await page.goto(link.url, {
         waitUntil: "networkidle0",
         timeout: 30000,
@@ -146,6 +171,8 @@ async function generatePdf(url, settings = {}) {
 
       pdfBuffers.push(pdfBuffer);
     }
+
+    onProgress({step: "merging", percent: 85, message: "PDFを結合中..."});
 
     // PDFをマージ
     const mergedPdf = await mergePdfs(pdfBuffers);

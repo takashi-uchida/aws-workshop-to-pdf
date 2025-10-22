@@ -155,8 +155,10 @@ class App {
     this.elements.convertSingle.disabled = true;
 
     try {
-      // API呼び出し
-      const result = await this.apiClient.convertToPdf(url, this.settings);
+      // API呼び出し（進捗コールバック付き）
+      const result = await this.apiClient.convertToPdf(url, this.settings, (progress) => {
+        this.updateProgress(progress.percent || 50, `${progress.message} (${progress.percent || 50}%)`);
+      });
 
       // 成功
       this.hideProgress();
@@ -223,11 +225,16 @@ class App {
       const url = urls[i];
 
       try {
-        // 進捗更新
-        this.updateProgress((i / urls.length) * 100, `${i + 1} / ${urls.length} 処理中...`);
-
-        // API呼び出し
-        const result = await this.apiClient.convertToPdf(url, this.settings);
+        // API呼び出し（進捗コールバック付き）
+        const result = await this.apiClient.convertToPdf(url, this.settings, (progress) => {
+          const basePercent = (i / urls.length) * 100;
+          const currentPercent = (progress.percent || 0) / urls.length;
+          const totalPercent = Math.round(basePercent + currentPercent);
+          this.updateProgress(
+            totalPercent,
+            `URL ${i + 1}/${urls.length}: ${progress.message} (${totalPercent}%)`
+          );
+        });
 
         results.push({
           url,

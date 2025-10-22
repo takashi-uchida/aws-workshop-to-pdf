@@ -91,38 +91,52 @@ class ApiClient {
    * URLをPDFに変換
    * @param {string} url - 変換するURL
    * @param {object} settings - PDF設定
+   * @param {Function} onProgress - 進捗コールバック
    * @return {Promise<object>} レスポンス
    */
-  async convertToPdf(url, settings = {}) {
+  async convertToPdf(url, settings = {}, onProgress = () => {}) {
     return this.retryWithBackoff(async () => {
       try {
         const endpoint = `${this.baseUrl}/convertToPdf`;
         
-        const response = await this.fetchWithTimeout(
-          endpoint,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ url, settings }),
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
-          ApiClient.DEFAULT_TIMEOUT
-        );
+          body: JSON.stringify({ url, settings }),
+        });
 
-        const data = await response.json();
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let result = null;
 
-        if (!response.ok) {
-          const error = new Error(data.error || 'PDF変換に失敗しました');
-          error.statusCode = response.status;
-          error.endpoint = endpoint;
-          error.details = data.details;
-          throw error;
+        while (true) {
+          const {done, value} = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = JSON.parse(line.slice(6));
+              
+              if (data.step === 'complete') {
+                result = data;
+              } else {
+                onProgress(data);
+              }
+            }
+          }
         }
 
-        return data;
+        if (!result || !result.success) {
+          throw new Error(result?.error || 'PDF変換に失敗しました');
+        }
+
+        return result;
       } catch (error) {
-        // ネットワークエラーの場合
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
           const networkError = new Error(
             'Firebase Functionsに接続できません。ネットワーク接続を確認してください。'
