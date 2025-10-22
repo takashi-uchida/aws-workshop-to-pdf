@@ -6,6 +6,37 @@ class App {
     this.apiClient = new ApiClient();
     this.settings = this.loadSettings();
     this.currentTab = 'single';
+    this.initCMP();
+  }
+
+  /**
+   * CMP初期化
+   */
+  initCMP() {
+    window.__tcfapi = window.__tcfapi || function() {
+      const queue = window.__tcfapi.queue = window.__tcfapi.queue || [];
+      queue.push(arguments);
+    };
+    
+    if (window.__tcfapi) {
+      window.__tcfapi('addEventListener', 2, (tcData, success) => {
+        if (success && tcData.eventStatus === 'useractioncomplete') {
+          this.handleConsentChange(tcData);
+        }
+      });
+    }
+  }
+
+  /**
+   * 同意変更ハンドラー
+   */
+  handleConsentChange(tcData) {
+    if (tcData.purpose.consents[1]) {
+      // 広告配信の同意あり
+      if (window.logEvent) {
+        window.logEvent(window.analytics, 'consent_granted');
+      }
+    }
   }
 
   /**
@@ -145,6 +176,9 @@ class App {
     
     try {
       (adsbygoogle = window.adsbygoogle || []).push({});
+      if (window.logEvent) {
+        window.logEvent(window.analytics, 'ad_requested');
+      }
     } catch (e) {
       console.error('広告の読み込みに失敗:', e);
     }
