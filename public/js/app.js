@@ -332,7 +332,7 @@ class App {
   showProgress(message) {
     this.elements.progressArea.style.display = 'block';
     this.elements.resultsArea.style.display = 'none';
-    this.elements.statusMessage.textContent = message;
+    this.elements.statusMessage.textContent = `0% - ${message}`;
     this.elements.progressFill.style.width = '0%';
   }
 
@@ -343,7 +343,7 @@ class App {
    */
   updateProgress(percent, message) {
     this.elements.progressFill.style.width = `${percent}%`;
-    this.elements.statusMessage.textContent = message;
+    this.elements.statusMessage.textContent = `${percent}% - ${message}`;
   }
 
   /**

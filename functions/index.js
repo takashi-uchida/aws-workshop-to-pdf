@@ -114,7 +114,7 @@ async function generatePdf(url, settings = {}, onProgress = () => {}) {
 
     // 全ページのリンクを取得
     const links = await getAllWorkshopLinks(page, url);
-    const maxPages = 10;
+    const maxPages = 50;
     const pagesToConvert = links.slice(0, maxPages);
     console.log(`Found ${links.length} pages, converting ${pagesToConvert.length}`);
 
@@ -193,29 +193,71 @@ async function generatePdf(url, settings = {}, onProgress = () => {}) {
 async function getAllWorkshopLinks(page, url) {
   await page.goto(url, {waitUntil: "networkidle0", timeout: 30000});
   await page.waitForTimeout(5000);
+  
+  // スクロールして動的コンテンツを読み込み
+  await page.evaluate(() => {
+    return new Promise((resolve) => {
+      let totalHeight = 0;
+      const distance = 100;
+      const timer = setInterval(() => {
+        const scrollHeight = document.body.scrollHeight;
+        window.scrollBy(0, distance);
+        totalHeight += distance;
+        if (totalHeight >= scrollHeight) {
+          clearInterval(timer);
+          window.scrollTo(0, 0);
+          resolve();
+        }
+      }, 50);
+    });
+  });
+  
+  await page.waitForTimeout(2000);
 
-  const links = await page.evaluate(() => {
+  const links = await page.evaluate((baseUrl) => {
     const navLinks = [];
     const seen = new Set();
-    const allLinks = document.querySelectorAll("a[href]");
-
-    allLinks.forEach((el) => {
-      const href = el.getAttribute("href");
-      if (!href || !href.includes("/en-US")) return;
-
-      const text = el.textContent.trim();
-      const fullUrl = href.startsWith("http") ? href : 
-        new URL(href, window.location.origin).href;
-
-      if (fullUrl && text && !seen.has(fullUrl) &&
-          !fullUrl.includes("#")) {
-        seen.add(fullUrl);
-        navLinks.push({url: fullUrl, title: text});
-      }
-    });
+    
+    // ナビゲーションメニューのリンクを優先的に取得
+    const navSelectors = [
+      'nav a[href]',
+      '.navigation a[href]',
+      '[role="navigation"] a[href]',
+      '.sidebar a[href]',
+      '.menu a[href]',
+      'a[href*="/ja-JP"]',
+      'a[href*="/en-US"]'
+    ];
+    
+    for (const selector of navSelectors) {
+      const elements = document.querySelectorAll(selector);
+      elements.forEach((el) => {
+        const href = el.getAttribute("href");
+        if (!href) return;
+        
+        const text = el.textContent.trim();
+        let fullUrl;
+        
+        if (href.startsWith("http")) {
+          fullUrl = href;
+        } else if (href.startsWith("/")) {
+          fullUrl = new URL(href, window.location.origin).href;
+        } else {
+          fullUrl = new URL(href, baseUrl).href;
+        }
+        
+        // 同じワークショップ内のページのみ
+        if (fullUrl && text && !seen.has(fullUrl) &&
+            !fullUrl.includes("#") &&
+            fullUrl.includes(window.location.pathname.split('/').slice(0, -1).join('/'))) {
+          seen.add(fullUrl);
+          navLinks.push({url: fullUrl, title: text});
+        }
+      });
+    }
 
     return navLinks;
-  });
+  }, url);
 
   console.log(`Found ${links.length} workshop pages`);
   return links.length > 0 ? links : [{url, title: "Main Page"}];
