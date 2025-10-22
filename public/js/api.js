@@ -105,11 +105,14 @@ class ApiClient {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({ url, settings }),
+          keepalive: true,
         });
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let result = null;
+        let lastProgressTime = Date.now();
+        const progressTimeout = 60000;
 
         while (true) {
           const {done, value} = await reader.read();
@@ -121,6 +124,7 @@ class ApiClient {
           for (const line of lines) {
             if (line.startsWith('data: ')) {
               const data = JSON.parse(line.slice(6));
+              lastProgressTime = Date.now();
               
               if (data.step === 'complete') {
                 result = data;
@@ -128,6 +132,10 @@ class ApiClient {
                 onProgress(data);
               }
             }
+          }
+
+          if (Date.now() - lastProgressTime > progressTimeout) {
+            throw new Error('進捗が長時間停止しています。接続が切断された可能性があります。');
           }
         }
 

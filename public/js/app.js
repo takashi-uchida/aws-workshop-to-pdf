@@ -6,6 +6,51 @@ class App {
     this.apiClient = new ApiClient();
     this.settings = this.loadSettings();
     this.currentTab = 'single';
+    this.currentProgress = null;
+    this.setupVisibilityHandler();
+  }
+
+  /**
+   * Page Visibility APIのハンドラー設定
+   */
+  setupVisibilityHandler() {
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        this.saveProgressState();
+      } else {
+        this.restoreProgressState();
+      }
+    });
+  }
+
+  /**
+   * 進捗状態を保存
+   */
+  saveProgressState() {
+    if (this.currentProgress) {
+      try {
+        sessionStorage.setItem('conversionProgress', JSON.stringify(this.currentProgress));
+      } catch (error) {
+        console.error('進捗状態の保存に失敗:', error);
+      }
+    }
+  }
+
+  /**
+   * 進捗状態を復元
+   */
+  restoreProgressState() {
+    try {
+      const saved = sessionStorage.getItem('conversionProgress');
+      if (saved) {
+        const progress = JSON.parse(saved);
+        if (progress.percent !== undefined) {
+          this.updateProgress(progress.percent, progress.message);
+        }
+      }
+    } catch (error) {
+      console.error('進捗状態の復元に失敗:', error);
+    }
   }
 
   /**
@@ -342,8 +387,10 @@ class App {
    * @param {string} message - ステータスメッセージ
    */
   updateProgress(percent, message) {
+    this.currentProgress = { percent, message, timestamp: Date.now() };
     this.elements.progressFill.style.width = `${percent}%`;
     this.elements.statusMessage.textContent = `${percent}% - ${message}`;
+    this.saveProgressState();
   }
 
   /**
@@ -351,6 +398,12 @@ class App {
    */
   hideProgress() {
     this.elements.progressArea.style.display = 'none';
+    this.currentProgress = null;
+    try {
+      sessionStorage.removeItem('conversionProgress');
+    } catch (error) {
+      console.error('進捗状態のクリアに失敗:', error);
+    }
   }
 
   /**

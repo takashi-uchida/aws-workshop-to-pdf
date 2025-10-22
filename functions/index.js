@@ -59,11 +59,29 @@ exports.convertToPdf = onRequest(
 
         // 進捗コールバック
         const onProgress = (progress) => {
-          res.write(`data: ${JSON.stringify(progress)}\n\n`);
+          try {
+            res.write(`data: ${JSON.stringify(progress)}\n\n`);
+          } catch (error) {
+            console.error('進捗送信エラー:', error);
+          }
         };
 
+        // keep-aliveハートビート
+        const heartbeatInterval = setInterval(() => {
+          try {
+            res.write(': heartbeat\n\n');
+          } catch (error) {
+            clearInterval(heartbeatInterval);
+          }
+        }, 15000);
+
         // PDF生成
-        const pdfBuffer = await generatePdf(url, settings, onProgress);
+        let pdfBuffer;
+        try {
+          pdfBuffer = await generatePdf(url, settings, onProgress);
+        } finally {
+          clearInterval(heartbeatInterval);
+        }
 
         // Firebase Storageにアップロード
         onProgress({step: "uploading", percent: 95, message: "アップロード中..."});
@@ -217,8 +235,9 @@ async function getAllWorkshopLinks(page, url) {
   const links = await page.evaluate((baseUrl) => {
     const navLinks = [];
     const seen = new Set();
+    const baseUrlObj = new URL(baseUrl);
+    const workshopPath = baseUrlObj.pathname.split('/').slice(0, 4).join('/');
     
-    // ナビゲーションメニューのリンクを優先的に取得
     const navSelectors = [
       'nav a[href]',
       '.navigation a[href]',
@@ -246,11 +265,12 @@ async function getAllWorkshopLinks(page, url) {
           fullUrl = new URL(href, baseUrl).href;
         }
         
-        // 同じワークショップ内のページのみ
-        if (fullUrl && text && !seen.has(fullUrl) &&
-            !fullUrl.includes("#") &&
-            fullUrl.includes(window.location.pathname.split('/').slice(0, -1).join('/'))) {
-          seen.add(fullUrl);
+        const urlObj = new URL(fullUrl);
+        const cleanUrl = urlObj.origin + urlObj.pathname;
+        
+        if (fullUrl && text && !seen.has(cleanUrl) &&
+            urlObj.pathname.startsWith(workshopPath)) {
+          seen.add(cleanUrl);
           navLinks.push({url: fullUrl, title: text});
         }
       });
