@@ -44,7 +44,17 @@ class App {
       helpLink: document.getElementById('help-link'),
       helpModal: document.getElementById('help-modal'),
       closeModal: document.getElementById('close-modal'),
+      
+      // 広告
+      adModal: document.getElementById('ad-modal'),
+      startConversion: document.getElementById('start-conversion'),
+      adContainer: document.getElementById('ad-container'),
+      adTimer: document.getElementById('ad-timer'),
     };
+    
+    this.pendingConversion = null;
+    this.adWatched = false;
+    this.adTimerInterval = null;
 
     // イベントリスナーの設定
     this.setupEventListeners();
@@ -101,6 +111,71 @@ class App {
         this.elements.helpModal.style.display = 'none';
       }
     });
+    
+    // 広告モーダル
+    this.elements.startConversion.addEventListener('click', () => {
+      if (this.adWatched) {
+        this.elements.adModal.style.display = 'none';
+        if (this.pendingConversion) {
+          this.pendingConversion();
+          this.pendingConversion = null;
+        }
+      }
+    });
+  }
+  
+  /**
+   * リワード広告を表示
+   */
+  showRewardAd() {
+    this.adWatched = false;
+    this.elements.startConversion.disabled = true;
+    this.elements.adModal.style.display = 'flex';
+    
+    // 広告をロード
+    this.loadRewardAd();
+  }
+  
+  /**
+   * リワード広告をロード
+   */
+  loadRewardAd() {
+    const adContainer = this.elements.adContainer;
+    adContainer.innerHTML = '<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-3586299042568120" data-ad-slot="4973039974" data-ad-format="auto" data-full-width-responsive="true"></ins>';
+    
+    try {
+      (adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (e) {
+      console.error('広告の読み込みに失敗:', e);
+    }
+    
+    // 30秒タイマーを開始
+    this.startAdTimer();
+  }
+  
+  /**
+   * 広告タイマーを開始
+   */
+  startAdTimer() {
+    let timeLeft = 30;
+    this.elements.adTimer.textContent = timeLeft;
+    
+    this.adTimerInterval = setInterval(() => {
+      timeLeft--;
+      this.elements.adTimer.textContent = timeLeft;
+      
+      if (timeLeft <= 0) {
+        clearInterval(this.adTimerInterval);
+        this.adWatched = true;
+        this.elements.startConversion.disabled = false;
+        this.elements.startConversion.innerHTML = '変換を開始';
+        
+        // Analytics
+        if (window.logEvent) {
+          window.logEvent(window.analytics, 'ad_watched');
+        }
+      }
+    }, 1000);
   }
 
   /**
@@ -150,17 +225,23 @@ class App {
 
     this.elements.singleError.textContent = '';
 
-    // UI更新
+    // リワード広告を表示
+    this.pendingConversion = () => this.executeSingleConversion(url);
+    this.showRewardAd();
+  }
+  
+  /**
+   * 単一URL変換実行
+   */
+  async executeSingleConversion(url) {
     this.showProgress('PDF変換中...');
     this.elements.convertSingle.disabled = true;
 
     try {
-      // API呼び出し（進捗コールバック付き）
       const result = await this.apiClient.convertToPdf(url, this.settings, (progress) => {
         this.updateProgress(progress.percent || 50, `${progress.message} (${progress.percent || 50}%)`);
       });
 
-      // 成功
       this.hideProgress();
       this.showResult({
         url,
@@ -169,15 +250,12 @@ class App {
         fileName: result.fileName,
       });
 
-      // PDFダウンロード
       this.downloadPdf(result.downloadUrl, result.fileName);
       
-      // Analytics
       if (window.logEvent) {
         window.logEvent(window.analytics, 'conversion_success', { type: 'single' });
       }
     } catch (error) {
-      // エラー
       this.hideProgress();
       this.showResult({
         url,
@@ -185,7 +263,6 @@ class App {
         error: getErrorMessage(error),
       });
       
-      // Analytics
       if (window.logEvent) {
         window.logEvent(window.analytics, 'conversion_error', { type: 'single' });
       }
@@ -214,7 +291,15 @@ class App {
 
     this.elements.batchError.textContent = '';
 
-    // UI更新
+    // リワード広告を表示
+    this.pendingConversion = () => this.executeBatchConversion(urls);
+    this.showRewardAd();
+  }
+  
+  /**
+   * バッチ変換実行
+   */
+  async executeBatchConversion(urls) {
     this.elements.convertBatch.disabled = true;
     this.showProgress(`0 / ${urls.length} 完了`);
 
@@ -259,12 +344,10 @@ class App {
       }
     }
 
-    // 完了
     this.hideProgress();
     this.showBatchResults(results);
     this.elements.convertBatch.disabled = false;
     
-    // Analytics
     if (window.logEvent) {
       const successful = results.filter(r => r.status === 'success').length;
       window.logEvent(window.analytics, 'batch_conversion_complete', { 
