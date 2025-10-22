@@ -169,6 +169,11 @@ class App {
 
       // PDFダウンロード
       this.downloadPdf(result.downloadUrl, result.fileName);
+      
+      // Analytics
+      if (window.logEvent) {
+        window.logEvent(window.analytics, 'conversion_success', { type: 'single' });
+      }
     } catch (error) {
       // エラー
       this.hideProgress();
@@ -177,6 +182,11 @@ class App {
         status: 'error',
         error: getErrorMessage(error),
       });
+      
+      // Analytics
+      if (window.logEvent) {
+        window.logEvent(window.analytics, 'conversion_error', { type: 'single' });
+      }
     } finally {
       this.elements.convertSingle.disabled = false;
     }
@@ -246,6 +256,15 @@ class App {
     this.hideProgress();
     this.showBatchResults(results);
     this.elements.convertBatch.disabled = false;
+    
+    // Analytics
+    if (window.logEvent) {
+      const successful = results.filter(r => r.status === 'success').length;
+      window.logEvent(window.analytics, 'batch_conversion_complete', { 
+        total: urls.length,
+        successful 
+      });
+    }
   }
 
   /**
