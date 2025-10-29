@@ -11,6 +11,18 @@
 
 </head>
 <body>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3586299042568120"
+      crossorigin="anonymous"></script>
+  <!-- display -->
+  <ins class="adsbygoogle"
+      style="display:block"
+      data-ad-client="ca-pub-3586299042568120"
+      data-ad-slot="4973039974"
+      data-ad-format="auto"
+      data-full-width-responsive="true"></ins>
+  <script>
+      (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
   <div class="container">
     <!-- ヘッダー -->
     <header class="header">
@@ -94,7 +106,11 @@
     <footer class="footer">
       <div class="footer-links">
         <a href="#help" id="help-link">使い方</a>
-        <a href="https://github.com/takashi-uchida/aws-workshop-to-pdf.git" target="_blank">GitHub</a>
+        <a href="/privacy.html" rel="noopener">プライバシーポリシー</a>
+        <a href="/terms.html" rel="noopener">利用規約</a>
+        <a href="/contact.html" rel="noopener">運営者情報</a>
+        <a href="#" id="consent-settings-link">Cookie設定</a>
+        <a href="https://github.com/takashi-uchida/aws-workshop-to-pdf.git" target="_blank" rel="noopener">GitHub</a>
       </div>
     </footer>
 
@@ -116,33 +132,15 @@
           
           <h3>制限事項</h3>
           <p>・処理時間: 最大300秒/URL</p>
-          <p>・PDFは24時間後に自動削除されます</p>
+          <p>・ダウンロードリンクは24時間後に無効化され、ファイルは自動削除されます</p>
         </div>
       </div>
     </div>
   </div>
 
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3586299042568120" crossorigin="anonymous"></script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAnalytics, logEvent } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-    
-    const firebaseConfig = {
-      apiKey: "AIzaSyB4l7mRSSHJz7bN1kmI1G7fqELHn2ID_kQ",
-      authDomain: "aws-workshop-to-pdf.firebaseapp.com",
-      projectId: "aws-workshop-to-pdf",
-      storageBucket: "aws-workshop-to-pdf.firebasestorage.app",
-      messagingSenderId: "316108199777",
-      appId: "1:316108199777:web:5c116a1ff8776c07f4d720",
-      measurementId: "G-0Y5CS35XQQ"
-    };
-    
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    window.analytics = analytics;
-    window.logEvent = logEvent;
-  </script>
+  <script type="module" src="/js/firebase-init.js"></script>
   <script src="/js/utils.js"></script>
+  <script src="/js/consent.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/app.js"></script>
 </body>

@@ -217,6 +217,7 @@ class App {
         status: 'success',
         downloadUrl: result.downloadUrl,
         fileName: result.fileName,
+        expiresAt: result.expiresAt,
       });
 
       this.downloadPdf(result.downloadUrl, result.fileName);
@@ -294,6 +295,7 @@ class App {
           status: 'success',
           downloadUrl: result.downloadUrl,
           fileName: result.fileName,
+          expiresAt: result.expiresAt,
         });
 
         // PDFダウンロード
@@ -412,11 +414,15 @@ class App {
    */
   showResult(result) {
     this.elements.resultsArea.style.display = 'block';
+    const expiryInfo = result.expiresAt
+      ? `<p class="result-meta">リンク有効期限: ${formatExpiration(result.expiresAt)}</p>`
+      : '';
     
     const html = result.status === 'success'
       ? `<div class="result-item success">
            <span>✅ 変換成功</span>
            <a href="${result.downloadUrl}" download="${result.fileName}">ダウンロード</a>
+           ${expiryInfo}
          </div>`
       : `<div class="result-item error">
            <span>❌ ${result.error}</span>
@@ -442,6 +448,7 @@ class App {
         html += `<div class="result-item success">
                    <span>✅ ${result.url}</span>
                    <a href="${result.downloadUrl}" download="${result.fileName}">ダウンロード</a>
+                   ${result.expiresAt ? `<p class="result-meta">有効期限: ${formatExpiration(result.expiresAt)}</p>` : ''}
                  </div>`;
       } else {
         html += `<div class="result-item error">

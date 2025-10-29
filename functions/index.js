@@ -1,4 +1,5 @@
 const {onRequest} = require("firebase-functions/v2/https");
+const {onSchedule} = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 const puppeteer = require("puppeteer-core");
 const chromium = require("@sparticuz/chromium");
@@ -86,7 +87,7 @@ exports.convertToPdf = onRequest(
         // Firebase Storageにアップロード
         onProgress({step: "uploading", percent: 95, message: "アップロード中..."});
         const fileName = `${uuidv4()}.pdf`;
-        const downloadUrl = await uploadToStorage(pdfBuffer, fileName);
+        const {downloadUrl, expiresAt} = await uploadToStorage(pdfBuffer, fileName);
 
         console.log(`PDF変換完了: ${fileName}`);
 
@@ -96,6 +97,7 @@ exports.convertToPdf = onRequest(
           success: true,
           downloadUrl,
           fileName,
+          expiresAt,
         })}\n\n`);
         res.end();
       } catch (error) {
@@ -313,17 +315,63 @@ async function mergePdfs(pdfBuffers) {
 async function uploadToStorage(pdfBuffer, fileName) {
   const bucket = admin.storage().bucket();
   const file = bucket.file(`pdfs/${fileName}`);
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
   // PDFをアップロード
   await file.save(pdfBuffer, {
     metadata: {
       contentType: "application/pdf",
+      metadata: {
+        expiresAt: expiresAt.toISOString(),
+      },
     },
-    public: true,
+    resumable: false,
   });
 
-  // 公開URL
-  const downloadUrl = `https://storage.googleapis.com/${bucket.name}/pdfs/${fileName}`;
+  // 署名付きURL（24時間有効）
+  const [signedUrl] = await file.getSignedUrl({
+    action: "read",
+    expires: expiresAt,
+  });
 
-  return downloadUrl;
+  return {
+    downloadUrl: signedUrl,
+    expiresAt: expiresAt.toISOString(),
+  };
 }
+
+/**
+ * 期限切れのPDFをクリーンアップ
+ */
+exports.cleanupExpiredPdfs = onSchedule(
+    {
+      schedule: "every 24 hours",
+      timeZone: "Asia/Tokyo",
+    },
+    async () => {
+      const bucket = admin.storage().bucket();
+      const [files] = await bucket.getFiles({prefix: "pdfs/"});
+      const now = Date.now();
+
+      for (const file of files) {
+        const metadata = file.metadata || {};
+        const customMetadata = metadata.metadata || {};
+        const expiresAt = customMetadata.expiresAt;
+
+        if (!expiresAt) {
+          continue;
+        }
+
+        const expiresTime = Date.parse(expiresAt);
+
+        if (!Number.isNaN(expiresTime) && expiresTime <= now) {
+          try {
+            await file.delete();
+            console.log(`Deleted expired PDF: ${file.name}`);
+          } catch (error) {
+            console.error(`Failed to delete ${file.name}:`, error);
+          }
+        }
+      }
+    }
+);

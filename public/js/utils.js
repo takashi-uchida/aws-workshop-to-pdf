@@ -67,3 +67,21 @@ function validateSettings(settings) {
 
   return true;
 }
+
+/**
+ * 期限表示用にタイムスタンプを整形
+ * @param {string} timestamp - ISO形式タイムスタンプ
+ * @return {string} フォーマット済み日時
+ */
+function formatExpiration(timestamp) {
+  try {
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) {
+      return timestamp;
+    }
+    return date.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+  } catch (error) {
+    console.error('期限表示の整形に失敗:', error);
+    return timestamp;
+  }
+}
